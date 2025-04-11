@@ -188,3 +188,12 @@ function asideSectionTogglerBtn()
         allSection[i].classList.toggle('open');
     }
 }
+
+ // Dynamically set the current year in the copyright text
+ document.addEventListener("DOMContentLoaded", function () {
+    const yearElement = document.querySelector(".copyright-text");
+    const currentYear = new Date().getFullYear();
+    if (yearElement) {
+      yearElement.innerHTML = `&copy; ${currentYear} Shahriar Konok`;
+    }
+  });

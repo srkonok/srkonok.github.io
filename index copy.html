@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shahriar Konok</title>
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="css/style.css" type="text/css">
+  <link rel="icon" href="favicon.ico">
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css"
+    integrity="sha512-vebUliqxrVkBy3gucMhClmyQP9On/HAWQdKDXRaAlb/FKuTbxkjPKUyqVOxAcGwFDka79eTF+YXwfke1h3/wfg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Skin Styles -->
+  <link rel="stylesheet" class="alternate-style" title="pink" href="css/skins/pink.css" type="text/css">
+  <link rel="stylesheet" class="alternate-style" title="blue" href="css/skins/blue.css" type="text/css" disabled>
+  <link rel="stylesheet" class="alternate-style" title="green" href="css/skins/green.css" type="text/css" disabled>
+  <link rel="stylesheet" class="alternate-style" title="orange" href="css/skins/orange.css" type="text/css" disabled>
+  <link rel="stylesheet" class="alternate-style" title="yellow" href="css/skins/yellow.css" type="text/css" disabled>
+
+  <!-- Style Switcher -->
+  <link rel="stylesheet" href="css/styleSwitcher.css" type="text/css">
+</head>
+
+<body>
+  <div class="main-container">
+    <!-- Aside Navigation -->
+    <div class="aside">
+      <div class="nav-toggler"><span></span></div>
+      <div class="aside-inner">
+        <div class="logo"><a href="#">KONOK</a></div>
+        <ul class="nav">
+          <li><a href="#home" class="nav-link active"><i class="fa fa-home"></i> Home</a></li>
+          <li><a href="#about" class="nav-link"><i class="fa fa-user"></i> About</a></li>
+          <li><a href="#services" class="nav-link"><i class="fa fa-list"></i> Skills</a></li>
+          <li><a href="#portfolio" class="nav-link"><i class="fa fa-briefcase"></i> Portfolio</a></li>
+          <li><a href="#contact" class="nav-link"><i class="fa fa-comments"></i> Contact</a></li>
+        </ul>
+        <div class="copyright-text">
+          &copy;
+          <script>document.write(new Date().getFullYear());</script> Shahriar Konok
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+      <!-- Dynamic content will load here -->
+    </div>
+  </div>
+
+  <script>
+    const routes = {
+      home: 'main.html',
+      about: 'about.html',
+      services: 'service.html',
+      portfolio: 'portfolio.html',
+      contact: 'contact.html',
+      lightbox: 'lightbox.html'
+      // styleSwitcher: 'styleSwitcher.html'
+    };
+
+    const loadSection = section => {
+      const file = routes[section] || routes.home;
+      fetch(file)
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          return response.text();
+        })
+        .then(html => {
+          document.getElementById('main-content').innerHTML = html;
+          document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+          document.querySelector(`.nav-link[href="#${section}"]`)?.classList.add('active');
+        })
+        .catch(err => console.error(`Failed to load ${file}:`, err));
+    };
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.substring(1) || 'home';
+      loadSection(hash);
+    });
+
+    // Handle navigation clicks
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const section = link.getAttribute('href').substring(1);
+        history.pushState(null, '', '#' + section);
+        loadSection(section);
+      });
+    });
+
+    // Handle browser back/forward buttons
+    window.addEventListener('popstate', () => {
+      const hash = window.location.hash.substring(1) || 'home';
+      loadSection(hash);
+    });
+  </script>
+  <script src="js/ityped.min.js"></script>
+  <!-- Template js -->
+  <script src="js/script.js"></script>
+</body>
+
+</html>
