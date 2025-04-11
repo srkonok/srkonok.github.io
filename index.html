@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-  <title>Shahriar Konok</title>
+  <title>Shahriar Rahman</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Template css Files -->
@@ -19,6 +20,7 @@
   <link rel="stylesheet" class="alternate-style" title="yellow" href="css/skins/yellow.css" type="text/css" disabled>
   <link rel="stylesheet" href="css/styleSwitcher.css" type="text/css">
 </head>
+
 <body>
 
   <!-- Preloader -->
@@ -42,12 +44,11 @@
         </div>
         <!-- Nav -->
         <ul class="nav">
-          <li><a href="#home" class="active"> <i class="fa fa-home"></i> Home</a></li>
-          <li><a href="#about"> <i class="fa fa-user"></i> About</a></li>
-          <li><a href="#services"> <i class="fa fa-list"></i> Skills</a></li>
-          <li><a href="#portfolio"> <i class="fa fa-briefcase"></i> Portfolio</a></li>
-          <!-- <li><a href="#blog"><i class="fa fa-envelope"></i> Blog</a></li> -->
-          <li><a href="#contact"> <i class="fa fa-comments"></i> Contact</a></li>
+          <li><a href="#home" class="active"><i class="fa fa-home"></i> Home</a></li>
+          <li><a href="#about"><i class="fa fa-user"></i> About</a></li>
+          <li><a href="#services"><i class="fa fa-list"></i> Skills</a></li>
+          <li><a href="#portfolio"><i class="fa fa-briefcase"></i> Portfolio</a></li>
+          <li><a href="#contact"><i class="fa fa-comments"></i> Contact</a></li>
         </ul>
         <!-- Copyright -->
         <div class="copyright-text">
@@ -56,9 +57,8 @@
       </div>
     </div>
     <!-- Aside End -->
-
     <!-- Main Content -->
-    <div class="main-content" id="main-content">
+    <div id="main-content">
       <!-- Dynamic content will load here -->
     </div>
     <!-- Main Content End -->
@@ -89,18 +89,23 @@
     </div>
     <h5>Style Switcher</h5>
     <ul>
-      <li><a href="javascript:void(0);" title="pink" style="background-color: #ec1839;" onclick="setActiveStyle('pink')"></a></li>
-      <li><a href="javascript:void(0);" title="blue" style="background-color: #2196f3;" onclick="setActiveStyle('blue')"></a></li>
-      <li><a href="javascript:void(0);" title="orange" style="background-color: #fa5b0f;" onclick="setActiveStyle('orange')"></a></li>
-      <li><a href="javascript:void(0);" title="yellow" style="background-color: #ffb400;" onclick="setActiveStyle('yellow')"></a></li>
-      <li><a href="javascript:void(0);" title="green" style="background-color: #72b626;" onclick="setActiveStyle('green')"></a></li>
+      <li><a href="javascript:void(0);" title="pink" style="background-color: #ec1839;"
+          onclick="setActiveStyle('pink')"></a></li>
+      <li><a href="javascript:void(0);" title="blue" style="background-color: #2196f3;"
+          onclick="setActiveStyle('blue')"></a></li>
+      <li><a href="javascript:void(0);" title="orange" style="background-color: #fa5b0f;"
+          onclick="setActiveStyle('orange')"></a></li>
+      <li><a href="javascript:void(0);" title="yellow" style="background-color: #ffb400;"
+          onclick="setActiveStyle('yellow')"></a></li>
+      <li><a href="javascript:void(0);" title="green" style="background-color: #72b626;"
+          onclick="setActiveStyle('green')"></a></li>
     </ul>
-    <h5>Body Skin</h5>
+    <h5 >Body Skin</h5>
     <label>
-      <input type="radio" class="body-skin" name="body-skin" value="light" checked> Light
+      <input type="radio" class="body-skin" name="body-skin" value="light" checked="true"> Light
     </label>
     <label>
-      <input type="radio" class="body-skin" name="body-skin" value="dark"> Dark
+      <input type="radio" class="body-skin" name="body-skin" value="dark" > Dark
     </label>
   </div>
   <!-- Live Style Switcher - Demo Only End -->
@@ -114,18 +119,25 @@
 
   <!-- Inline Scripts -->
   <script defer>
-    (function(){
+    (function () {
       const routes = {
         home: 'main.html',
         about: 'about.html',
         services: 'service.html',
         portfolio: 'portfolio.html',
-        contact: 'contact.html',
-        lightbox: 'lightbox.html'
+        contact: 'contact.html'
+        // lightbox: 'lightbox.html'
       };
 
       const navLinks = document.querySelectorAll('.nav a');
       const mainContent = document.getElementById('main-content');
+      const navToggler = document.querySelector('.nav-toggler');
+      const aside = document.querySelector('.aside');
+
+      // Toggle aside on navToggler click
+      navToggler.addEventListener('click', () => {
+        aside.classList.toggle('open');
+      });
 
       const loadSection = section => {
         const file = routes[section] || routes.home;
@@ -137,7 +149,8 @@
           .then(html => {
             mainContent.innerHTML = html;
             navLinks.forEach(link => link.classList.remove('active'));
-            document.querySelector(`.nav a[href="#${section}"]`)?.classList.add('active');
+            const activeLink = document.querySelector(`.nav a[href="#${section}"]`);
+            if (activeLink) activeLink.classList.add('active');
           })
           .catch(err => console.error(`Failed to load ${file}:`, err));
       };
@@ -153,8 +166,12 @@
         link.addEventListener('click', e => {
           e.preventDefault();
           const section = link.getAttribute('href').substring(1);
-          history.pushState(null, '', '#' + section);
+          history.pushState(null, '', `#${section}`);
           loadSection(section);
+          // Close mobile navigation after click
+          if (window.innerWidth <= 1199) {
+            aside.classList.remove('open');
+          }
         });
       });
 
@@ -163,7 +180,25 @@
         const hash = window.location.hash.substring(1) || 'home';
         loadSection(hash);
       });
+
+      // Close menu on outside click (mobile only)
+      document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 1199 && 
+            !aside.contains(e.target) && 
+            !e.target.closest('.nav-toggler')) {
+          aside.classList.remove('open');
+        }
+      });
+
+      // Close menu on resize (if window becomes larger than mobile)
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 1199) {
+          aside.classList.remove('open');
+        }
+      });
     })();
+    
   </script>
 </body>
+
 </html>
