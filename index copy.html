@@ -1,110 +1,613 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shahriar Konok</title>
-  <!-- Main CSS -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Template css Files -->
   <link rel="stylesheet" href="css/style.css" type="text/css">
-  <link rel="icon" href="favicon.ico">
+  <link rel="icon " href="favicon.ico">
 
-  <!-- External CSS -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- Live Style Switcher - Demo Only -->
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css"
     integrity="sha512-vebUliqxrVkBy3gucMhClmyQP9On/HAWQdKDXRaAlb/FKuTbxkjPKUyqVOxAcGwFDka79eTF+YXwfke1h3/wfg=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-  <!-- Skin Styles -->
   <link rel="stylesheet" class="alternate-style" title="pink" href="css/skins/pink.css" type="text/css">
   <link rel="stylesheet" class="alternate-style" title="blue" href="css/skins/blue.css" type="text/css" disabled>
   <link rel="stylesheet" class="alternate-style" title="green" href="css/skins/green.css" type="text/css" disabled>
   <link rel="stylesheet" class="alternate-style" title="orange" href="css/skins/orange.css" type="text/css" disabled>
   <link rel="stylesheet" class="alternate-style" title="yellow" href="css/skins/yellow.css" type="text/css" disabled>
-
-  <!-- Style Switcher -->
   <link rel="stylesheet" href="css/styleSwitcher.css" type="text/css">
 </head>
 
 <body>
+
+  <!-- Preloader -->
+  <div class="preloader">
+    <div class="loader">
+
+    </div>
+  </div>
+  <!-- Preloader End -->
+
+  <!-- Main Container -->
   <div class="main-container">
-    <!-- Aside Navigation -->
+    <!-- Aside -->
     <div class="aside">
-      <div class="nav-toggler"><span></span></div>
+      <!-- Nav Toggler Btn -->
+      <div class="nav-toggler">
+        <span></span>
+      </div>
       <div class="aside-inner">
-        <div class="logo"><a href="#">KONOK</a></div>
+        <!-- Logo -->
+        <div class="logo">
+          <a href="#">KONOK</a>
+        </div>
+        <!-- Nav -->
         <ul class="nav">
-          <li><a href="#home" class="nav-link active"><i class="fa fa-home"></i> Home</a></li>
-          <li><a href="#about" class="nav-link"><i class="fa fa-user"></i> About</a></li>
-          <li><a href="#services" class="nav-link"><i class="fa fa-list"></i> Skills</a></li>
-          <li><a href="#portfolio" class="nav-link"><i class="fa fa-briefcase"></i> Portfolio</a></li>
-          <li><a href="#contact" class="nav-link"><i class="fa fa-comments"></i> Contact</a></li>
+          <li><a href="#home" class="active"><i class="fa fa-home"></i> Home</a></li>
+          <li><a href="#about"><i class="fa fa-user"></i> About</a></li>
+          <li><a href="#services"><i class="fa fa-list"></i> Skills</a></li>
+          <li><a href="#portfolio"><i class="fa fa-briefcase"></i> Portfolio</a></li>
+          <!-- <li><a href="#blog"><i class="fa fa-envelope"></i> Blog</a></li> -->
+          <li><a href="#contact"><i class="fa fa-comments"></i> Contact</a></li>
         </ul>
+        <!-- Copyright -->
         <div class="copyright-text">
-          &copy;
-          <script>document.write(new Date().getFullYear());</script> Shahriar Konok
+          &copy; 2024 Shahriar Konok
         </div>
       </div>
     </div>
-
+    <!-- Aside End -->
     <!-- Main Content -->
-    <div class="main-content" id="main-content">
-      <!-- Dynamic content will load here -->
+    <div class="main-content">
+
+      <!-- Home Section -->
+      <section class="home section active" id="home">
+        <div class="container">
+          <div class="intro">
+            <img src="images/about.jpg" alt="profile" class="shadow-dark">
+            <h1>Shahriar R. Konok</h1>
+            <span class="iTyped"></span>
+            <div class="social-links">
+              <a href="https://www.facebook.com/shah.konok/"><i class="fa fa-facebook"></i></a>
+              <a href="https://github.com/srkonok"><i class="fa fa-github"></i></a>
+              <a href="https://www.linkedin.com/in/shah-konok/"><i class="fa fa-linkedin"></i></a>
+              <a href="https://wa.me/8801817848334"><i class="fa fa-whatsapp"></i></a>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Home Section End -->
+
+      <!-- About Section -->
+      <section class="about section" id="about">
+        <div class="container">
+          <div class="row">
+            <div class="section-title padd-15">
+              <h2>About Me</h2>
+            </div>
+          </div>
+          <div class="row">
+            <div class="about-content padd-15">
+              <div class="row">
+                <div class="about-text padd-15">
+                  <h3>Hello, I'm Shahriar Konok and <span> Software Engineer and Cloud Practitioner</span></h3>
+                  <p>I'm distinguished graduate from Adamjee Cantonment College and
+                    Bangladesh Army University of Science and Technology,
+                    where I achieved GPA of 5 in both SSC and HSC, and a commendable CGPA of 3.6 out of 4 upon
+                    graduation. My fervor for technology led me to victory in the bdapps National Hackathon 2022 with
+                    the creation of the 'Mess Monitor' app, simplifying meal tracking for students and bachelors. At
+                    Shadin Lab LLC, I thrived as a Cloud Solution Developer, adeptly utilizing AWS services like EC2,
+                    S3, RDS, VPC, and Lambda to develop scalable applications. My commitment to continuous learning is
+                    evident through my specialized training in Cloud Management at the BASIS Institute of Technology and
+                    Management. My noteworthy involvement in government projects, such as managing beneficiary training
+                    for Rural Cooperative Societies (RDCD) using Laravel Microservices, underscores my versatility and
+                    dedication. Now, I eagerly seek new challenges in the tech industry, poised to leverage my expertise
+                    for impactful contributions.</p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="personal-info padd-15">
+                  <div class="row">
+                    <div class="info-item padd-15">
+                      <a href="https://www.linkedin.com/in/shah-konok/">
+                        <p>LinkedIn <span>Shahriar Konok</span></p>
+                      </a>
+                    </div>
+                    <div class="info-item padd-15">
+                      <a href="https://srkonok.github.io">
+                        <p>Website : <span>srkonok.github.io</span></p>
+                      </a>
+                    </div>
+                    <div class="info-item padd-15">
+                      <a href="mailto:srkonok20@gmail.com">
+                        <p>Email : <span>srkonok20@gmail.com</span></p>
+                      </a>
+                    </div>
+                    <div class="info-item padd-15">
+                      <p>Degree : <span>B.Sc. Engg. in CSE</span></p>
+                    </div>
+                    <div class="info-item padd-15">
+                      <a href="https://wa.me/8801817848334">
+                        <p>WhatsApp : <span>+88 01817848334</span></p>
+                      </a>
+                    </div>
+
+                    <div class="info-item padd-15">
+                      <p>Address : <span>Nikunja-2, Dhaka-1229</span></p>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="buttons padd-15">
+                      <a href="https://drive.google.com/file/d/1O3U2TagrU5ipNGgNKKXnS4gReZQjeGfC/view?usp=sharing"
+                        class="btn">Download Cv</a>
+                      <a href="mailto:srkonok20@gmail.com" class="btn hire-me">Email Me</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="skills padd-15">
+                  <div class="row">
+                    <div class="skill-item padd-15">
+                      <h5>Cloud Management(AWS)</h5>
+                      <div class="progress">
+                        <div class="progress-in" style="width: 95%;"></div>
+                        <div class="skill-porcent">
+                          Excellent
+                        </div>
+                      </div>
+                    </div>
+                    <div class="skill-item padd-15">
+                      <h5>Python</h5>
+                      <div class="progress">
+                        <div class="progress-in" style="width: 85%;"></div>
+                        <div class="skill-porcent">
+                          Good
+                        </div>
+                      </div>
+                    </div>
+                    <div class="skill-item padd-15">
+                      <h5>PHP/Laravel</h5>
+                      <div class="progress">
+                        <div class="progress-in" style="width: 70%;"></div>
+                        <div class="skill-porcent">
+                          Good
+                        </div>
+                      </div>
+                    </div>
+                    <div class="skill-item padd-15">
+                      <h5>Database(MySQL,DynamoDB)</h5>
+                      <div class="progress">
+                        <div class="progress-in" style="width: 90%;"></div>
+                        <div class="skill-porcent">
+                          Excellent
+                        </div>
+                      </div>
+                    </div>
+                    <div class="skill-item padd-15">
+                      <h5>React</h5>
+                      <div class="progress">
+                        <div class="progress-in" style="width: 70%;"></div>
+                        <div class="skill-porcent">
+                          Intermediate
+                        </div>
+                      </div>
+                    </div>
+                    <div class="skill-item padd-15">
+                      <h5>Node.JS</h5>
+                      <div class="progress">
+                        <div class="progress-in" style="width: 80%;"></div>
+                        <div class="skill-porcent">
+                          Excellent
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="education padd-15">
+                  <h3 class="title">Education</h3>
+                  <div class="row">
+                    <div class="timeline-box padd-15">
+                      <div class="timeline shadow-dark">
+                        <!-- timeline Item -->
+                        <div class="timeline-item">
+                          <div class="circle-dot"></div>
+                          <h6 class="timeline-date"><i class="fa fa-calendar"></i> 2017 - 2022</h6>
+                          <h4 class="timeline-title">B.Sc. Engg. in CSE</h4>
+                          <p class="timeline-text"> CGPA - 3.6 out of 4 <br> Bangladesh Army University of Science and
+                            technology
+                            <br> Saidpur
+                          </p>
+                          <p class="timeline-text">
+                          <div><i class="la la-award"></i> Achievement:
+                            <li>Champion bdapps National Hackathon 2022</li>
+                            <li>Participated in ACM ICPC preliminary Contest 2019</li>
+                          </div>
+                          </p>
+
+                        </div>
+                        <!-- timeline Item End -->
+                        <!-- timeline Item -->
+                        <div class="timeline-item">
+                          <div class="circle-dot"></div>
+                          <h6 class="timeline-date"><i class="fa fa-calendar"></i> 2014 - 2016</h6>
+                          <h4 class="timeline-title">HSC (Dhaka Board)</h4>
+                          <p class="timeline-text"> CGPA - 5 out of 5 <br> Adamjee Cantonment College <br>Dhaka </p>
+                        </div>
+                        <!-- timeline Item End -->
+                        <!-- timeline Item -->
+                        <div class="timeline-item">
+                          <div class="circle-dot"></div>
+                          <h6 class="timeline-date"><i class="fa fa-calendar"></i> 2008 - 2011</h6>
+                          <h4 class="timeline-title">SSC (Jessore Board)</h4>
+                          <p class="timeline-text">GPA - 5 out of 5 (Board Scholarship) <br>Allardarga Secondary School
+                            <br>Kushtia
+                          </p>
+                        </div>
+                        <!-- timeline Item End -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="experience padd-15">
+                  <h3 class="title">Experience</h3>
+                  <div class="row">
+                    <div class="timeline-box padd-15">
+                      <div class="timeline shadow-dark">
+                        <!-- timeline Item -->
+                        <div class="timeline-item">
+                          <div class="circle-dot"></div>
+                          <h6 class="timeline-date"><i class="fa fa-calendar"></i> Oct 2023 - Present</h6>
+                          <h4 class="timeline-title">Software Engineer, OrangeBD</h4>
+                          <p class="timeline-text">In October, 2023 I was involved in Government project Under Ministry
+                            of Local Government. For their Rural Co-operative Socienty(RDCD), My Team was responsible
+                            for Beneficary training management. It was contractual with Era InfoTech and OrangeBD. The
+                            project was based on Laravel Microservices. </p>
+                        </div>
+                        <!-- timeline Item End -->
+                        <!-- timeline Item -->
+                        <div class="timeline-item">
+                          <div class="circle-dot"></div>
+                          <h6 class="timeline-date"><i class="fa fa-calendar"></i> July 2023 - Oct 2023</h6>
+                          <h4 class="timeline-title">Cloud Management Trainee, BITM</h4>
+                          <p class="timeline-text">BITM shed light on the practical applications of cloud
+                            infrastructure, where I had the pleasure of engaging with fellow cloud enthusiasts. We
+                            explored various facets, including EC2 with autoscaling and load balancing, S3 storage, EBS
+                            volumes, VPC configurations, DynamoDB databases, the seamless communication enabled by SES
+                            (Simple Email Service) and the efficiency of serverless architecture.</p>
+                        </div>
+                        <!-- timeline Item End -->
+                        <!-- timeline Item -->
+                        <div class="timeline-item">
+                          <div class="circle-dot"></div>
+                          <h6 class="timeline-date"><i class="fa fa-calendar"></i> July 2022 - June 2023</h6>
+                          <h4 class="timeline-title">Solution Developer(Backend)</h4>
+                          <p class="timeline-text">After graduation I joined Shadin Lab LLC and started my journey as a
+                            Cloud Solution Developer. I built there Cloud native apps with various AWS service like EC2,
+                            S3, RDS,VPC and Lambda that was auto scalable and load balancing. </p>
+                        </div>
+                        <!-- timeline Item End -->
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- About Section End -->
+
+      <!-- Service Section -->
+      <section class="service section" id="services">
+        <div class="container">
+          <div class="row">
+            <div class="section-title padd-15">
+              <h2>Skills</h2>
+            </div>
+          </div>
+          <div class="row">
+            <!-- Service item -->
+            <div class="service-item padd-15">
+              <div class="service-item-inner">
+                <div class="icon"><i class="fa fa-cloud" ></i></div>
+                <h4>Cloud Practitioner</h4>
+                <p>Working with AWS cloud for past 2 years gave me the ability to scaling an applications </p>
+              </div>
+            </div>
+            <!-- Service item End -->
+            <!-- Service item -->
+            <div class="service-item padd-15">
+              <div class="service-item-inner">
+                <div class="icon"><i class="fa fa-server"></i></div>
+                <h4>Serverless Solution</h4>
+                <p>Developing a site is like playing with Web. It is my great pleasure to work with your project</p>
+              </div>
+            </div>
+            <!-- Service item End -->
+            <!-- Service item -->
+            <div class="service-item padd-15">
+              <div class="service-item-inner">
+                <div class="icon"><i class="fa fa-laptop"></i></div>
+                <h4>Laravel and ExpressJs</h4>
+                <p>Built rest-api with modern Framework Like ExpressJs, Laravel, Django</p>
+              </div>
+            </div>
+            <!-- Service item End -->
+
+            <!-- Service item -->
+            <div class="service-item padd-15">
+              <div class="service-item-inner">
+                <div class="icon"><i class="fa fa-database"></i></div>
+                <h4>Database (MySQL,DynamoDB)</h4>
+                <p> In Modern Technology, Data is everything. We ensure the security to your data.</p>
+              </div>
+            </div>
+            <!-- Service item End -->
+            <!-- Service item -->
+            <div class="service-item padd-15">
+              <div class="service-item-inner">
+                <div class="icon"><i class="fa fa-photo"></i></div>
+                <h4>Web Design</h4>
+                <p>Design and Customize the web look that gives your customer great UI/UX. </p>
+              </div>
+            </div>
+            <!-- Service item End -->
+
+            <!-- Service item -->
+            <div class="service-item padd-15">
+              <div class="service-item-inner">
+                <div class="icon"><i class="fa fa-rocket"></i></div>
+                <h4>Seo Optimization</h4>
+                <p>Basic SEO is for your website that makes more visible search engine.</p>
+              </div>
+            </div>
+            <!-- Service Item End -->
+            <!-- Service Item -->
+            <!-- <div class="service-item padd-15">
+              <div class="service-item-inner">
+                <div class="icon"><i class="fa fa-paint-brush"></i></div>
+                <h4>Logo Design</h4>
+                <p>We design beautiful cost effective logo. </p>
+              </div>
+            </div> -->
+            <!-- Service item End -->
+          </div>
+        </div>
+      </section>
+      <!-- Service Section End -->
+
+
+
+      <!-- Blog Section 
+      <section class="blog section" id="blog">
+        <div class="container">
+          <div class="row">
+            <div class="section-title padd-15">
+              <h2>Latest Blog</h2>
+            </div>
+          </div>
+          <div class="row">
+            
+            <div class="blog-item padd-15">
+              <div class="blog-item-inner shadow-dark">
+                <div class="blog-img">
+                  <img src="images/blog/1.jpg" alt="">
+                  <div class="blog-date">
+                    4 jun 2020
+                  </div>
+                </div>
+                <div class="blog-info">
+                  <h4 class="blog-title">Responsive Web Design</h4>
+                  <p class="blog-description">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolore, porro
+                    rem quod illo
+                    quam, eum alias id, repellendus magni, quas.</p>
+                  <p class="blog-tags">Tags : <a href="#">Html</a> , <a href="#">css</a></p>
+                </div>
+              </div>
+            </div>
+            
+            
+            <div class="blog-item padd-15">
+              <div class="blog-item-inner shadow-dark">
+                <div class="blog-img">
+                  <img src="images/blog/2.jpg" alt="">
+                  <div class="blog-date">
+                    4 jun 2020
+                  </div>
+                </div>
+                <div class="blog-info">
+                  <h4 class="blog-title">Creative Slideshow</h4>
+                  <p class="blog-description">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolore, porro
+                    rem quod illo
+                    quam, eum alias id, repellendus magni, quas.</p>
+                  <p class="blog-tags">Tags : <a href="#">Html</a> , <a href="#">Javascript</a></p>
+                </div>
+              </div>
+            </div>
+            
+            
+            <div class="blog-item padd-15">
+              <div class="blog-item-inner shadow-dark">
+                <div class="blog-img">
+                  <img src="images/blog/3.jpg" alt="">
+                  <div class="blog-date">
+                    4 jun 2020
+                  </div>
+                </div>
+                <div class="blog-info">
+                  <h4 class="blog-title">Image Gallery Lightbox</h4>
+                  <p class="blog-description">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolore, porro
+                    rem quod illo
+                    quam, eum alias id, repellendus magni, quas.</p>
+                  <p class="blog-tags">Tags : <a href="#">Javascript</a></p>
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </section>
+       -->
+
+      <!-- Contact Section -->
+      <section class="contact section" id="contact">
+        <div class="container">
+          <div class="row">
+            <div class="section-title padd-15">
+              <h2>Contact Me</h2>
+            </div>
+          </div>
+          <div class="row">
+            <!-- contact-info-item  -->
+            <div class="contact-info-item padd-15">
+              <div class="icon">
+                <i class="fa fa-phone"></i>
+                <h4>Call Me On</h4>
+                <a class="btn:hover" href="tel:+880 1521 413705">
+                  <p>+880 1521 413705</p>
+                </a>
+              </div>
+            </div>
+            <!-- contact-info-item end -->
+            <!-- contact-info-item  -->
+            <div class="contact-info-item padd-15">
+              <div class="icon">
+                <i class="fa fa-map-marker"></i>
+                <h4>Home District: </h4>
+                <p>Daoulatpur, Kushtia</p>
+              </div>
+            </div>
+            <!-- contact-info-item end -->
+            <!-- contact-info-item  -->
+            <div class="contact-info-item padd-15">
+              <div class="icon">
+                <i class="fa fa-envelope"></i>
+                <h4>Email</h4>
+                <a href="mailto:srkonok20@gmail.com">
+                  <p>srkonok20@gmail.com</p>
+                </a>
+              </div>
+            </div>
+            <!-- contact-info-item end -->
+          </div>
+
+          <!-- Contact Form -->
+          <!-- <div class="row">
+            <form action="#" class="contact-form padd-15">
+              <div class="row">
+                <div class="form-item col-6 padd-15">
+                  <div class="form-group">
+                    <input type="text" name="" class="form-control" placeholder="Name*">
+                  </div>
+                </div>
+                <div class="form-item col-6 padd-15">
+                  <div class="form-group">
+                    <input type="email" name="" class="form-control" placeholder="Email*">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-item col-12 padd-15">
+                  <div class="form-group">
+                    <input type="text" name="" class="form-control" placeholder="Subject*">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-item col-12 padd-15">
+                  <div class="form-group">
+                    <textarea class="form-control" name="" placeholder="Your Message..."></textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-12 padd-15">
+                  <button type="submit" class="btn">Send Message</button>
+                </div>
+              </div>
+            </form>
+          </div> -->
+          <!-- Contact Form End -->
+          <section class="home ">
+            <div class="container">
+              <div class="intro">
+
+                <div class=" social-links">
+                  <a href="https://www.facebook.com/shahariar10"><i class="fa fa-facebook"></i></a>
+                  <a href="https://github.com/srkonok"><i class="fa fa-github"></i></a>
+                  <a href="https://www.linkedin.com/in/shahariar10/"><i class="fa fa-linkedin"></i></a>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+      <!-- Contact Section End -->
+
+    </div>
+    <!-- Main Content End -->
+  </div>
+  <!-- Main Container End -->
+
+  <!-- Lightbox -->
+  <div class="lightbox">
+    <div class="lightbox-content">
+      <div class="lightbox-close">&times;</div>
+      <img src="" alt="" onclick="nextItem()" class="lightbox-img">
+      <div class="lightbox-caption">
+        <div class="caption-text"></div>
+        <div class="caption-counter"></div>
+      </div>
+    </div>
+    <div class="lightbox-controls">
+      <div class="prev-item" onclick="prevItem()"><i class="fa fa-angle-left"></i></div>
+      <div class="next-item" onclick="nextItem()"><i class="fa fa-angle-right"></i></div>
     </div>
   </div>
+  <!-- Lightbox End -->
 
-  <script>
-    const routes = {
-      home: 'main.html',
-      about: 'about.html',
-      services: 'service.html',
-      portfolio: 'portfolio.html',
-      contact: 'contact.html',
-      lightbox: 'lightbox.html'
-      // styleSwitcher: 'styleSwitcher.html'
-    };
+  <!-- Live Style Switcher - Demo Only -->
+  <div class="style-switcher">
+    <div class="toggle-style-switcher">
+      <i class="fa fa-cog fa-spin"></i>
+    </div>
+    <h5>Style Switcher</h5>
+    <ul>
+      <li><a href="javascript:void(0);" title="pink" style="background-color: #ec1839;"
+          onclick="setActiveStyle('pink')"></a></li>
+      <li><a href="javascript:void(0);" title="blue" style="background-color: #2196f3;"
+          onclick="setActiveStyle('blue')"></a></li>
+      <li><a href="javascript:void(0);" title="orange" style="background-color: #fa5b0f;"
+          onclick="setActiveStyle('orange')"></a></li>
+      <li><a href="javascript:void(0);" title="yellow" style="background-color: #ffb400;"
+          onclick="setActiveStyle('yellow')"></a></li>
+      <li><a href="javascript:void(0);" title="green" style="background-color: #72b626;"
+          onclick="setActiveStyle('green')"></a></li>
+    </ul>
+    <h5>Body Skin</h5>
+    <label>
+      <input type="radio" class="body-skin" name="body-skin" value="light" checked="true"> Light
+    </label>
+    <label>
+      <input type="radio" class="body-skin" name="body-skin" value="dark"> Dark
+    </label>
+  </div>
+  <!-- Live Style Switcher - Demo Only End -->
 
-    const loadSection = section => {
-      const file = routes[section] || routes.home;
-      fetch(file)
-        .then(response => {
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          return response.text();
-        })
-        .then(html => {
-          document.getElementById('main-content').innerHTML = html;
-          document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-          document.querySelector(`.nav-link[href="#${section}"]`)?.classList.add('active');
-        })
-        .catch(err => console.error(`Failed to load ${file}:`, err));
-    };
-
-    // Initial load
-    window.addEventListener('DOMContentLoaded', () => {
-      const hash = window.location.hash.substring(1) || 'home';
-      loadSection(hash);
-    });
-
-    // Handle navigation clicks
-    document.querySelectorAll('.nav-link').forEach(link => {
-      link.addEventListener('click', e => {
-        e.preventDefault();
-        const section = link.getAttribute('href').substring(1);
-        history.pushState(null, '', '#' + section);
-        loadSection(section);
-      });
-    });
-
-    // Handle browser back/forward buttons
-    window.addEventListener('popstate', () => {
-      const hash = window.location.hash.substring(1) || 'home';
-      loadSection(hash);
-    });
-  </script>
+  <!-- Plugins -->
   <script src="js/ityped.min.js"></script>
   <!-- Template js -->
   <script src="js/script.js"></script>
+  <!-- Live Style Js - Demo Only -->
+  <script src="js/styleSwitcher.js"></script>
 </body>
 
 </html>

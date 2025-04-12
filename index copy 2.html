@@ -52,9 +52,9 @@
         </ul>
         <!-- Copyright -->
         <div class="copyright-text">
-            &copy; 
-            <script>document.write(new Date().getFullYear());</script> 
-            Shahriar Konok
+          &copy;
+
+          Shahriar Konok
         </div>
       </div>
     </div>
@@ -102,12 +102,12 @@
       <li><a href="javascript:void(0);" title="green" style="background-color: #72b626;"
           onclick="setActiveStyle('green')"></a></li>
     </ul>
-    <h5>Body Skin</h5>
+    <h5 >Body Skin</h5>
     <label>
       <input type="radio" class="body-skin" name="body-skin" value="light" checked="true"> Light
     </label>
     <label>
-      <input type="radio" class="body-skin" name="body-skin" value="dark"> Dark
+      <input type="radio" class="body-skin" name="body-skin" value="dark" > Dark
     </label>
   </div>
   <!-- Live Style Switcher - Demo Only End -->
@@ -185,32 +185,13 @@
 
       // Close menu on outside click (mobile only)
       document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 1199 &&
-          !aside.contains(e.target) &&
-          !e.target.closest('.nav-toggler')) {
+        if (window.innerWidth <= 1199 && 
+            !aside.contains(e.target) && 
+            !e.target.closest('.nav-toggler')) {
           aside.classList.remove('open');
         }
       });
-      // Initialize Portfolio Filter
-      if (sectionId === 'portfolio') {
-        const filterButtons = document.querySelectorAll('.portfolio-filter button');
-        const portfolioItems = document.querySelectorAll('.portfolio-item');
 
-        filterButtons.forEach(button => {
-          button.addEventListener('click', () => {
-            // Remove active class from all buttons
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-
-            const filter = button.dataset.filter;
-            portfolioItems.forEach(item => {
-              item.style.display =
-                (filter === 'all' || item.dataset.category === filter) ?
-                  'block' : 'none';
-            });
-          });
-        });
-      }
       // Close menu on resize (if window becomes larger than mobile)
       window.addEventListener('resize', () => {
         if (window.innerWidth > 1199) {
@@ -218,7 +199,7 @@
         }
       });
     })();
-
+    
   </script>
 </body>
 
