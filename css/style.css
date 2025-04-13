@@ -1353,3 +1353,46 @@ select {
     text-decoration: underline;
     text-underline-offset: 4px;
   }
+
+ /* Pagination Styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+  }
+  
+  .pagination button {
+    background: var(--bg-black-50);
+    border: 1px solid var(--bg-black-100);
+    color: var(--text-black-700);
+    padding: 8px 15px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .pagination button:hover:not(:disabled) {
+    background: var(--skin-color);
+    color: white;
+    border-color: var(--skin-color);
+  }
+  
+  .pagination button.active {
+    background: var(--skin-color);
+    color: white;
+    border-color: var(--skin-color);
+  }
+  
+  .pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .tag.active {
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
