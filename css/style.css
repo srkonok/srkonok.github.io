@@ -1340,3 +1340,16 @@ select {
         max-width: 100%;
     }
 }
+
+/* tag */
+.tag {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--skin-color);
+  }
+  
+  .tag.active {
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
