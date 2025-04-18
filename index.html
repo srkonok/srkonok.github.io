@@ -72,7 +72,7 @@
   
   <script type="module">
     import { blogs } from './js/portfolio.js';
-
+  
     (function () {
       const routes = {
         sidebar: 'partials/sidebar.html',
@@ -83,29 +83,29 @@
         blog: 'partials/blog.html',
         contact: 'partials/contact.html'
       };
-
+  
       let navLinks, navToggler, aside, mainContent;
-
+  
       async function initializeApp() {
         await loadSidebar();
         setupEventListeners();
         const initialSection = window.location.hash.substring(1) || 'home';
         await loadSection(initialSection);
       }
-
+  
       async function loadSidebar() {
         try {
           const response = await fetch(routes.sidebar);
           const html = await response.text();
           const rootContainer = document.getElementById('root-container');
           rootContainer.innerHTML = html;
-
+  
           // Update copyright year
           const copyright = rootContainer.querySelector('.copyright-text');
           if (copyright) {
             copyright.innerHTML = `&copy; ${new Date().getFullYear()} Shahriar Rahman`;
           }
-
+  
           // Cache elements
           navLinks = document.querySelectorAll('.nav a');
           navToggler = document.querySelector('.nav-toggler');
@@ -115,11 +115,11 @@
           console.error('Error loading sidebar:', error);
         }
       }
-
+  
       function setupEventListeners() {
         // Nav toggler
         navToggler.addEventListener('click', () => aside.classList.toggle('open'));
-
+  
         // Nav links
         navLinks.forEach(link => {
           link.addEventListener('click', e => {
@@ -128,36 +128,24 @@
             handleNavigation(section);
           });
         });
-
+  
         // Window events
         window.addEventListener('popstate', handlePopState);
         window.addEventListener('resize', handleResize);
         document.addEventListener('click', handleDocumentClick);
       }
-
-      // Blog configuration
-      const blogsPerPage = 6;
-      let currentPage = 1;
-      let totalPages = 1;
-      let currentFilterTag = null;
-
+  
       async function loadSection(section) {
         try {
           const response = await fetch(routes[section] || routes.home);
           const html = await response.text();
           mainContent.innerHTML = html;
-
-          // Reset blog states when leaving blog section
-          if (section !== 'blog') {
-            currentPage = 1;
-            currentFilterTag = null;
-          }
-
+  
           // Update active navigation
           navLinks.forEach(link => link.classList.remove('active'));
           const activeLink = document.querySelector(`.nav a[href="#${section}"]`);
           if (activeLink) activeLink.classList.add('active');
-
+  
           // Initialize section components
           if (section === 'portfolio') {
             initPortfolioFilter();
@@ -170,7 +158,7 @@
           console.error('Error loading section:', error);
         }
       }
-
+  
       function initiTyped() {
         if (typeof iTyped !== 'undefined') {
           new iTyped('.iTyped', {
@@ -182,22 +170,22 @@
           });
         }
       }
-
+  
       function handleNavigation(section) {
         history.pushState({ section }, '', `#${section}`);
         loadSection(section);
         if (window.innerWidth <= 1199) aside.classList.remove('open');
       }
-
+  
       function handlePopState(e) {
         const section = e.state?.section || 'home';
         loadSection(section);
       }
-
+  
       function handleResize() {
         if (window.innerWidth > 1199) aside.classList.remove('open');
       }
-
+  
       function handleDocumentClick(e) {
         if (window.innerWidth <= 1199 && 
             !aside.contains(e.target) && 
@@ -205,23 +193,15 @@
           aside.classList.remove('open');
         }
       }
-
+  
       // Blog functions
       function initBlogPosts() {
         const blogContainer = document.getElementById('blog-posts');
         if (!blogContainer) return;
-
-        const filteredBlogs = currentFilterTag
-          ? blogs.filter(blog => blog.tags.map(t => t.toLowerCase()).includes(currentFilterTag))
-          : blogs;
-
-        totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
-        const currentBlogs = filteredBlogs.slice(
-          (currentPage - 1) * blogsPerPage,
-          currentPage * blogsPerPage
-        );
-
-        blogContainer.innerHTML = currentBlogs.map(blog => `
+  
+        const filteredBlogs = blogs;
+  
+        blogContainer.innerHTML = filteredBlogs.map(blog => `
           <div class="blog-item padd-15" data-tags="${blog.tags.map(t => t.toLowerCase()).join(' ')}">
             <div class="blog-item-inner shadow-dark">
               <div class="blog-img">
@@ -237,50 +217,19 @@
             </div>
           </div>
         `).join('');
-
-        blogContainer.insertAdjacentHTML('beforeend', `
-          <div class="pagination padd-15" style="color: red;">
-            <button class="prev-page" ${currentPage === 1 ? 'disabled' : ''}>
-              <i class="las la-arrow-left"></i>
-            </button>
-            <div class="page-numbers">
-              ${Array.from({ length: totalPages }, (_, i) => `
-                <button class="page-number ${i + 1 === currentPage ? 'active' : ''}" 
-                  data-page="${i + 1}">${i + 1}</button>
-              `).join('')}
-            </div>
-            <button class="next-page" ${currentPage === totalPages ? 'disabled' : ''}>
-              <i class="las la-arrow-right"></i>
-            </button>
-          </div>
-        `);
-
+  
         blogContainer.addEventListener('click', handleBlogInteractions);
       }
-
+  
       function handleBlogInteractions(e) {
         const tag = e.target.closest('.tag');
         if (tag) {
           e.preventDefault();
           const selectedTag = tag.textContent.trim().toLowerCase();
-          currentFilterTag = currentFilterTag === selectedTag ? null : selectedTag;
-          currentPage = 1;
           initBlogPosts();
-          return;
         }
-
-        const prevBtn = e.target.closest('.prev-page');
-        const nextBtn = e.target.closest('.next-page');
-        const pageBtn = e.target.closest('.page-number');
-
-        if (prevBtn) currentPage--;
-        if (nextBtn) currentPage++;
-        if (pageBtn) currentPage = parseInt(pageBtn.dataset.page);
-        
-        currentPage = Math.max(1, Math.min(currentPage, totalPages));
-        initBlogPosts();
       }
-
+  
       // Initialize app
       window.addEventListener('DOMContentLoaded', initializeApp);
     })();
