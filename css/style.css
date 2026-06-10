@@ -1502,6 +1502,19 @@ body.dark .portfolio-card-body p { color: #cccccc; }
 
 body.dark .portfolio-tech-tag { background: #333; color: #ccc; }
 
+.portfolio-badge-private {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(0,0,0,0.55);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 14px;
+    cursor: default;
+}
+
 .portfolio-stats {
     display: flex;
     flex-wrap: wrap;
