@@ -1080,17 +1080,6 @@ select {
     -webkit-transform: scale(1.1);
 }
 
-.blog .blog-item-inner .blog-img .blog-date {
-    position: absolute;
-    padding: 4px 10px;
-    border-radius: 5px;
-    color: #ffffff;
-    font-size: 14px;
-    font-weight: 600;
-    left: 15px;
-    bottom: 15px;
-}
-
 .blog .blog-item-inner .blog-info {
     padding: 30px 15px;
     background-color: #fdf9ff;
@@ -1143,6 +1132,48 @@ select {
     font-size: 14px;
     font-weight: 600;
     color: var(--skin-color);
+}
+
+.blog .blog-pagination {
+    flex: 0 0 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.blog .blog-pagination .page-btn {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--bg-black-100);
+    border-radius: 5px;
+    background-color: var(--bg-black-50);
+    color: var(--text-black-700);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.blog .blog-pagination .page-btn:hover:not(:disabled):not(.active) {
+    color: var(--skin-color);
+    border-color: var(--skin-color);
+}
+
+.blog .blog-pagination .page-btn.active {
+    background-color: var(--skin-color);
+    border-color: var(--skin-color);
+    color: #ffffff;
+    cursor: default;
+}
+
+.blog .blog-pagination .page-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
 }
 
 /* Contact Section */
@@ -1589,7 +1620,10 @@ body.dark .portfolio-stats { border-color: #393939; }
 
 body.dark .achievement-card { background: #222; border-color: #393939; }
 
-.achievement-card .ach-icon { font-size: 30px; margin-bottom: 8px; }
+.achievement-card .ach-icon { font-size: 30px; margin-bottom: 8px; color: var(--skin-color); }
+
+.cert-card .cert-icon svg,
+.achievement-card .ach-icon svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; }
 
 .achievement-card .ach-value {
     display: block;
@@ -1691,7 +1725,7 @@ body.dark .testimonial-author strong { color: #fff; }
 
 body.dark .cert-card { background: #222; border-color: #393939; }
 
-.cert-card .cert-icon { font-size: 38px; flex-shrink: 0; line-height: 1; }
+.cert-card .cert-icon { font-size: 38px; flex-shrink: 0; line-height: 1; color: var(--skin-color); }
 
 .cert-card .cert-info h4 {
     font-size: 15px;

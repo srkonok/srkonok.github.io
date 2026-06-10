@@ -28,7 +28,7 @@ export const blogs = [
   },
   {
     slug: "choosing-aws-compute-ec2-ecs-lambda",
-    image: "images/blog/1.jpg",
+    image: "images/blog/aws-compute.jpg",
     date: "18 Feb 2025",
     title: "EC2 vs ECS vs Lambda: Choosing the Right Compute on AWS",
     description:
@@ -37,7 +37,7 @@ export const blogs = [
   },
   {
     slug: "aws-vpc-networking-fundamentals",
-    image: "images/blog/2.jpg",
+    image: "images/blog/vpc-networking.jpg",
     date: "22 Apr 2025",
     title: "AWS VPC Networking Explained: Subnets, Route Tables, and NAT",
     description:
@@ -46,7 +46,7 @@ export const blogs = [
   },
   {
     slug: "docker-multi-stage-builds-smaller-images",
-    image: "images/blog/3.jpg",
+    image: "images/blog/docker-builds.jpg",
     date: "10 Jun 2025",
     title: "Docker Multi-Stage Builds: From 1.2GB Images to 90MB",
     description:
@@ -55,7 +55,7 @@ export const blogs = [
   },
   {
     slug: "monitoring-prometheus-grafana-microservices",
-    image: "images/blog/learn.jpeg",
+    image: "images/blog/monitoring.jpg",
     date: "5 Sep 2025",
     title: "Monitoring Microservices with Prometheus and Grafana",
     description:
@@ -64,7 +64,7 @@ export const blogs = [
   },
   {
     slug: "designing-rate-limiter-system-design",
-    image: "images/blog/framework.webp",
+    image: "images/blog/rate-limiter.jpg",
     date: "12 Dec 2025",
     title: "Designing a Rate Limiter: A Practical System Design Walkthrough",
     description:
@@ -73,7 +73,7 @@ export const blogs = [
   },
   {
     slug: "scaling-databases-replication-sharding-caching",
-    image: "images/blog/income.webp",
+    image: "images/blog/database-scaling.jpg",
     date: "20 Mar 2026",
     title: "Scaling Databases: Replication, Sharding, and Caching in Practice",
     description:

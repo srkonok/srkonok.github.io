@@ -201,35 +201,85 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
+const POSTS_PER_PAGE = 6;
+
 function initBlogPosts() {
   const blogContainer = document.getElementById('blog-posts');
+  const pagination = document.getElementById('blog-pagination');
   if (!blogContainer) return;
 
-  blogContainer.innerHTML = blogs.map(blog => `
-    <div class="blog-item padd-15" data-tags="${escapeHtml(blog.tags.map(t => t.toLowerCase()).join(' '))}">
-      <div class="blog-item-inner shadow-dark" data-nav-section="blog/${escapeHtml(blog.slug)}" role="link" tabindex="0" aria-label="Read post: ${escapeHtml(blog.title)}">
-        <div class="blog-img">
-          <img src="${escapeHtml(blog.image)}" alt="${escapeHtml(blog.title)}" loading="lazy">
-          <div class="blog-date">${escapeHtml(blog.date)}</div>
-        </div>
-        <div class="blog-info">
-          <h4 class="blog-title"><strong>${escapeHtml(blog.title)}</strong></h4>
-          <p class="blog-description">${escapeHtml(blog.description)}</p>
-          <p class="blog-tags">Tags: ${blog.tags.map(tag =>
-            `<span class="tag">${escapeHtml(tag)}</span>`).join(', ')}</p>
-          <span class="blog-read-more">Read More <i class="fa fa-long-arrow-right" aria-hidden="true"></i></span>
+  const totalPages = Math.ceil(blogs.length / POSTS_PER_PAGE);
+  let currentPage = 1;
+
+  function renderPage(page) {
+    currentPage = page;
+    const start = (page - 1) * POSTS_PER_PAGE;
+    blogContainer.innerHTML = blogs.slice(start, start + POSTS_PER_PAGE).map(blog => `
+      <div class="blog-item padd-15" data-tags="${escapeHtml(blog.tags.map(t => t.toLowerCase()).join(' '))}">
+        <div class="blog-item-inner shadow-dark" data-blog-slug="${escapeHtml(blog.slug)}" role="link" tabindex="0" aria-label="Read post: ${escapeHtml(blog.title)}">
+          <div class="blog-img">
+            <img src="${escapeHtml(blog.image)}" alt="${escapeHtml(blog.title)}" loading="lazy">
+          </div>
+          <div class="blog-info">
+            <h4 class="blog-title"><strong>${escapeHtml(blog.title)}</strong></h4>
+            <p class="blog-description">${escapeHtml(blog.description)}</p>
+            <p class="blog-tags">Tags: ${blog.tags.map(tag =>
+              `<span class="tag">${escapeHtml(tag)}</span>`).join(', ')}</p>
+            <span class="blog-read-more">Read More <i class="fa fa-long-arrow-right" aria-hidden="true"></i></span>
+          </div>
         </div>
       </div>
-    </div>
-  `).join('');
+    `).join('');
+    renderPagination();
+  }
+
+  function renderPagination() {
+    if (!pagination) return;
+    if (totalPages <= 1) {
+      pagination.innerHTML = '';
+      return;
+    }
+    let html = `<button class="page-btn prev" ${currentPage === 1 ? 'disabled' : ''} aria-label="Previous page"><i class="fa fa-angle-left" aria-hidden="true"></i></button>`;
+    for (let i = 1; i <= totalPages; i++) {
+      html += `<button class="page-btn${i === currentPage ? ' active' : ''}" data-page="${i}" ${i === currentPage ? 'aria-current="page"' : ''} aria-label="Page ${i}">${i}</button>`;
+    }
+    html += `<button class="page-btn next" ${currentPage === totalPages ? 'disabled' : ''} aria-label="Next page"><i class="fa fa-angle-right" aria-hidden="true"></i></button>`;
+    pagination.innerHTML = html;
+  }
+
+  function openCard(card) {
+    handleNavigation(`blog/${card.getAttribute('data-blog-slug')}`);
+  }
+
+  blogContainer.addEventListener('click', e => {
+    const card = e.target.closest('[data-blog-slug]');
+    if (card) openCard(card);
+  });
 
   blogContainer.addEventListener('keydown', e => {
-    const card = e.target.closest('[data-nav-section]');
+    const card = e.target.closest('[data-blog-slug]');
     if (card && (e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
-      handleNavigation(card.getAttribute('data-nav-section'));
+      openCard(card);
     }
   });
+
+  if (pagination) {
+    pagination.addEventListener('click', e => {
+      const btn = e.target.closest('button.page-btn');
+      if (!btn || btn.disabled) return;
+      let page = currentPage;
+      if (btn.classList.contains('prev')) page -= 1;
+      else if (btn.classList.contains('next')) page += 1;
+      else page = Number(btn.getAttribute('data-page'));
+      if (page < 1 || page > totalPages || page === currentPage) return;
+      renderPage(page);
+      const section = blogContainer.closest('.section');
+      if (section) section.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  renderPage(1);
 }
 
 function initContactForm() {
