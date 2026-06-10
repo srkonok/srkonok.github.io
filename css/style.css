@@ -603,10 +603,21 @@ select {
     color: #302e4d;
 }
 
-.about .about-content .education {
+.about .about-content .edu-community-col {
     -ms-flex: 0 0 50%;
     flex: 0 0 50%;
     max-width: 50%;
+}
+
+.about .about-content .education {
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin-top: 30px;
+}
+
+.about .about-content .community {
+    flex: 0 0 100%;
+    max-width: 100%;
     margin-top: 30px;
 }
 
@@ -755,24 +766,71 @@ select {
 
 .cert-photo:hover { opacity: 0.85; }
 
-.ach-photos {
-    display: flex;
-    gap: 6px;
+.ach-carousel {
+    position: relative;
     margin-top: 12px;
+    border-radius: 6px;
+    overflow: hidden;
 }
 
-.ach-photo {
-    flex: 1;
-    min-width: 0;
-    height: 100px;
+.ach-carousel-track {
+    display: flex;
+    transition: transform 0.35s ease;
+}
+
+.ach-carousel-img {
+    flex-shrink: 0;
+    width: 100%;
+    height: 120px;
     object-fit: cover;
-    border-radius: 6px;
     cursor: pointer;
-    transition: opacity 0.2s;
     display: block;
 }
 
-.ach-photo:hover { opacity: 0.85; }
+.ach-carousel-prev,
+.ach-carousel-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-60%);
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    border: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.2s;
+}
+
+.ach-carousel-prev:hover,
+.ach-carousel-next:hover { background: rgba(0, 0, 0, 0.7); }
+
+.ach-carousel-prev { left: 6px; }
+.ach-carousel-next { right: 6px; }
+
+.ach-carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 0 2px;
+}
+
+.ach-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ccc;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.ach-dot.active { background: var(--skin-color); }
 
 .ach-news-link {
     display: inline-flex;
@@ -925,6 +983,8 @@ select {
     -ms-flex: 0 0 33.33%;
     max-width: 33.33%;
     margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
 }
 
 .portfolio .portfolio-item.hide {
@@ -972,6 +1032,9 @@ select {
 
 .portfolio .portfolio-item-inner .portfolio-img img {
     width: 100%;
+    height: 200px;
+    object-fit: cover;
+    object-position: top;
     display: block;
 }
 
@@ -1475,7 +1538,9 @@ body.dark .contact-card h4 { color: #fff; }
     .service .service-item,
     .blog .blog-item,
     .about .about-content .skills,
+    .about .about-content .edu-community-col,
     .about .about-content .education,
+    .about .about-content .community,
     .about .about-content .experience {
         flex: 0 0 100%;
         -ms-flex: 0 0 100%;
@@ -1707,6 +1772,9 @@ body.dark .skill-tag.familiar   { background: #1b5e20; color: #a5d6a7; border-co
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 0 20px rgba(48, 46, 77, 0.15);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .portfolio .portfolio-card .portfolio-item-inner {
@@ -1718,6 +1786,9 @@ body.dark .skill-tag.familiar   { background: #1b5e20; color: #a5d6a7; border-co
 .portfolio-card-body {
     background: #ffffff;
     padding: 12px 14px 14px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 body.dark .portfolio-card-body { background: #222222; }
@@ -1773,7 +1844,7 @@ body.dark .portfolio-tech-tag { background: #1b5e20; color: #a5d6a7; border-colo
     gap: 14px;
     border-top: 1px solid #e8e8f0;
     padding-top: 10px;
-    margin-top: 4px;
+    margin-top: auto;
 }
 
 body.dark .portfolio-stats { border-color: #393939; }
@@ -2153,6 +2224,7 @@ body.dark .about-section-divider { border-color: #393939; }
 /* Sub-section titles inside About: no decoration */
 .about .education .title,
 .about .experience .title,
+.about .community .title,
 .testimonials .title {
     font-size: 20px;
     font-weight: 700;
@@ -2164,11 +2236,14 @@ body.dark .about-section-divider { border-color: #393939; }
 .about .education .title::after,
 .about .experience .title::before,
 .about .experience .title::after,
+.about .community .title::before,
+.about .community .title::after,
 .testimonials .title::before,
 .testimonials .title::after { display: none; }
 
 body.dark .about .education .title,
 body.dark .about .experience .title,
+body.dark .about .community .title,
 body.dark .testimonials .title { color: #fff; }
 
 /* Contact mobile */

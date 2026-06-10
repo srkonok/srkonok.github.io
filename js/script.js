@@ -28,7 +28,7 @@ window.addEventListener('load', function () {
     }
 
     document.addEventListener('click', function (e) {
-        const photo = e.target.closest('.timeline-photo, .cert-photo, .ach-photo');
+        const photo = e.target.closest('.timeline-photo, .cert-photo, .ach-photo, .ach-carousel-img');
         if (photo) { open(photo.src, photo.alt); return; }
         if (e.target === lb || e.target.closest('.lightbox-close')) { close(); }
     });

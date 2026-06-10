@@ -128,6 +128,7 @@ async function loadSection(section) {
     else if (section === 'blog') initBlogPosts();
     else if (section === 'home') initTyped();
     else if (section === 'contact') initContactForm();
+    else if (section === 'certification' || section === 'certifications') initCarousels();
 
     wireNavButtons();
   } catch (error) {
@@ -279,6 +280,35 @@ function initBlogPosts() {
   }
 
   renderPage(1);
+}
+
+function initCarousels() {
+  mainContent.querySelectorAll('.ach-carousel').forEach(function (carousel) {
+    const track = carousel.querySelector('.ach-carousel-track');
+    const imgs = carousel.querySelectorAll('.ach-carousel-img');
+    const dots = carousel.querySelectorAll('.ach-dot');
+    const prev = carousel.querySelector('.ach-carousel-prev');
+    const next = carousel.querySelector('.ach-carousel-next');
+    let current = 0;
+    let timer;
+
+    function goTo(i) {
+      current = (i + imgs.length) % imgs.length;
+      track.style.transform = `translateX(-${current * 100}%)`;
+      dots.forEach((d, idx) => d.classList.toggle('active', idx === current));
+    }
+
+    function resetTimer() {
+      clearInterval(timer);
+      timer = setInterval(() => goTo(current + 1), 3000);
+    }
+
+    if (prev) prev.addEventListener('click', e => { e.stopPropagation(); goTo(current - 1); resetTimer(); });
+    if (next) next.addEventListener('click', e => { e.stopPropagation(); goTo(current + 1); resetTimer(); });
+    dots.forEach((d, i) => d.addEventListener('click', e => { e.stopPropagation(); goTo(i); resetTimer(); }));
+
+    resetTimer();
+  });
 }
 
 function initContactForm() {
