@@ -398,10 +398,17 @@ select {
     min-height: 100vh;
     display: -ms-flexbox;
     display: flex;
+    align-items: center;
 }
 
 .home .intro {
     text-align: center;
+    width: 100%;
+}
+
+.home .intro span.iTyped {
+    display: inline-block;
+    min-height: 1.4em;
 }
 
 .home .intro img {
@@ -703,7 +710,7 @@ select {
 }
 
 .service .service-item .service-item-inner {
-    background-color: #fdf9ff;
+    background-color: #ffffff;
     border: 1px solid #d4d4e3;
     border-radius: 10px;
     padding: 30px 15px;
@@ -736,7 +743,6 @@ select {
 }
 
 .service .service-item .service-item-inner:hover .icon .fa {
-    font-size: 25px;
     color: #ffffff;
 }
 
@@ -1082,7 +1088,7 @@ select {
 
 .blog .blog-item-inner .blog-info {
     padding: 30px 15px;
-    background-color: #fdf9ff;
+    background-color: #ffffff;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -1182,32 +1188,57 @@ select {
     flex: 0 0 33.33%;
     -ms-flex: 0 0 33.33%;
     max-width: 33.33%;
+    margin-bottom: 24px;
+}
+
+.contact-card {
+    background: #ffffff;
+    border: 1px solid #e4def0;
+    border-radius: 8px;
+    padding: 24px 16px 20px;
     text-align: center;
-    margin-bottom: 40px;
+    height: 100%;
+    transition: box-shadow 0.3s ease;
 }
 
-.contact .contact-info-item .icon {
-    display: inline-block;
+body.dark .contact-card { background: #222; border-color: #393939; }
+
+.contact-card a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
 }
 
-.contact .contact-info-item .icon .fa {
-    font-size: 40px;
+.contact-card:hover { box-shadow: 0 4px 20px rgba(48,46,77,0.12); }
+
+.contact-card .contact-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--skin-color) 10%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    color: var(--skin-color);
 }
 
-.contact .contact-info-item h4 {
-    font-size: 18px;
+.contact-card .contact-icon .fa { font-size: 22px; }
+
+.contact-card h4 {
+    font-size: 15px;
     font-weight: 700;
     color: #302e4d;
-    text-transform: capitalize;
-    margin: 15px 0 5px;
+    margin: 0 0 6px;
 }
 
-.contact .contact-info-item p {
-    font-size: 16px;
-    line-height: 25px;
-    color: #504e70;
+body.dark .contact-card h4 { color: #fff; }
+
+.contact-card p {
+    font-size: 13px;
+    color: #888;
     margin: 0;
-    font-weight: 400;
+    word-break: break-all;
 }
 
 .contact .contact-form {
@@ -1522,7 +1553,7 @@ body.dark .skill-tag.familiar   { background: #1b5e20; color: #a5d6a7; border-co
 }
 
 .portfolio-card-body {
-    background: #fdf9ff;
+    background: #ffffff;
     padding: 12px 14px 14px;
 }
 
@@ -1549,15 +1580,16 @@ body.dark .portfolio-card-body p { color: #cccccc; }
 .portfolio-tech-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
 
 .portfolio-tech-tag {
-    background: #f0f0f8;
-    color: #302e4d;
-    border-radius: 3px;
-    padding: 2px 8px;
-    font-size: 11px;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+    border-radius: 4px;
+    padding: 2px 9px;
+    font-size: 12px;
     font-weight: 600;
 }
 
-body.dark .portfolio-tech-tag { background: #333; color: #ccc; }
+body.dark .portfolio-tech-tag { background: #1b5e20; color: #a5d6a7; border-color: #2e7d32; }
 
 .portfolio-badge-private {
     display: flex;
@@ -1932,4 +1964,50 @@ body.dark .blog-post h2 {
 
 @media (max-width: 767px) {
     .blog-post h1 { font-size: 25px; }
+}
+
+/* =============================================
+   UI/UX Polish — June 2026
+   ============================================= */
+
+/* Availability badge: centered below photo */
+.home .intro .availability-badge {
+    display: block;
+    width: fit-content;
+    margin: 0 auto 12px;
+}
+
+/* About section: visual divider before timelines */
+.about-section-divider {
+    border-top: 1px solid #e4def0;
+    margin: 32px 15px 40px;
+    flex: 0 0 100%;
+}
+
+body.dark .about-section-divider { border-color: #393939; }
+
+/* Sub-section titles inside About: no decoration */
+.about .education .title,
+.about .experience .title,
+.testimonials .title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #302e4d;
+    margin-bottom: 20px;
+}
+
+.about .education .title::before,
+.about .education .title::after,
+.about .experience .title::before,
+.about .experience .title::after,
+.testimonials .title::before,
+.testimonials .title::after { display: none; }
+
+body.dark .about .education .title,
+body.dark .about .experience .title,
+body.dark .testimonials .title { color: #fff; }
+
+/* Contact mobile */
+@media (max-width: 575px) {
+    .contact .contact-info-item { flex: 0 0 100%; max-width: 100%; }
 }
