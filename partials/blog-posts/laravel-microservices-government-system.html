@@ -1,0 +1,76 @@
+<!-- Blog Post: Laravel Microservices Government System -->
+<section class="blog-post section" id="blog-post">
+  <div class="container">
+    <a href="#" class="blog-back" data-nav-section="blog"><i class="fa fa-angle-left" aria-hidden="true"></i> All Posts</a>
+    <article>
+      <header class="blog-post-header">
+        <h1>Building a Multi-District Government System with Laravel Microservices</h1>
+        <p class="blog-post-meta">28 Oct 2024 &middot; Laravel &middot; Microservices &middot; Backend</p>
+      </header>
+
+      <p>At Orange Business Development I worked on the Beneficiary Training Management System for RDCD,
+        under Bangladesh's Ministry of Local Government — a platform that manages training programs for
+        50,000+ beneficiaries across multiple districts. This post covers the architecture decisions we made,
+        why we split the system into services, and what I'd do differently.</p>
+
+      <h2>The problem</h2>
+      <p>A beneficiary's journey runs through several distinct workflows: registration and verification,
+        training batch allocation, attendance, allowance disbursement, and reporting up the administrative
+        hierarchy (union → upazila → district → ministry). Each workflow has different load patterns and
+        different stakeholders. Registration spikes when a new program opens; reporting spikes at month-end;
+        disbursement must integrate with a payment gateway and absolutely cannot double-pay.</p>
+
+      <h2>Why microservices — and why "boring" ones</h2>
+      <p>We didn't start from a microservices ideology. We started from three operational facts:</p>
+      <ul>
+        <li>The payment/disbursement flow needed stricter change control and isolation than the rest of the
+          system — a bug in reporting must never take down payments.</li>
+        <li>District-level usage was bursty, and we wanted to scale the public-facing registration service
+          independently of the internal admin tools.</li>
+        <li>Multiple teams worked in parallel, and a modular monolith was already showing merge-conflict and
+          deploy-coupling pain.</li>
+      </ul>
+      <p>So we split along those seams: a registration/beneficiary service, a training-management service, a
+        disbursement service wrapping the payment gateway, and a notification service (SMS and in-app, since
+        many beneficiaries are reachable only by phone). Each service is a plain Laravel application with its
+        own MySQL schema, fronted by REST APIs — no exotic infrastructure, because a government project's
+        operations team has to be able to run it for years.</p>
+
+      <h2>Decisions that paid off</h2>
+      <ul>
+        <li><strong>Database-per-service, reporting via read replicas.</strong> Cross-service joins were the
+          biggest temptation. Instead, the reporting service consumed read-only replicas and materialized
+          nightly aggregates, which kept month-end reporting load away from transactional databases.</li>
+        <li><strong>Idempotency keys on disbursement.</strong> Every payment request carries a client-generated
+          idempotency key, stored with a unique constraint. Gateway timeouts and retries were common; duplicate
+          payments were not.</li>
+        <li><strong>API performance work where it mattered.</strong> Profiling showed most latency came from a
+          handful of N+1 query patterns and unindexed filters on district/batch lookups. Fixing those — eager
+          loading, composite indexes, and response caching on slow-changing reference data — improved
+          processing speed by roughly 35% across the 30+ endpoints we built and optimized.</li>
+        <li><strong>CI/CD from day one.</strong> GitHub Actions pipelines per service — test, build, deploy —
+          cut our deployment time by about 60% compared with the manual process the project started with, and
+          made multi-service releases predictable. (I wrote up the pipeline details in a separate post.)</li>
+      </ul>
+
+      <h2>Lessons learned</h2>
+      <ul>
+        <li><strong>Service boundaries are organizational, not just technical.</strong> Our split worked
+          because it matched who changed what. A split that crosses one team's daily workflow just adds
+          network calls to their day.</li>
+        <li><strong>Government scale is about spikes and audits, not steady throughput.</strong> Design for
+          the enrollment-deadline day and the auditor's CSV export, not the average Tuesday.</li>
+        <li><strong>Keep the number of services small.</strong> Four services with clear contracts beat twelve
+          with fuzzy ones. Every additional service is another deploy pipeline, another log stream, another
+          thing the operations handover document must explain.</li>
+        <li><strong>Notifications deserve their own service earlier than you think.</strong> SMS gateways fail
+          independently of everything else; isolating that failure mode saved us repeatedly.</li>
+      </ul>
+
+      <p>The system is live at <a href="https://service.rdcd.gov.bd/" target="_blank" rel="noopener noreferrer">service.rdcd.gov.bd</a>,
+        serving beneficiaries across multiple districts. If you're building something similar — especially in a
+        public-sector context — I'm happy to compare notes; reach me through the contact page.</p>
+    </article>
+  </div>
+</section>
+<!-- Blog Post End -->

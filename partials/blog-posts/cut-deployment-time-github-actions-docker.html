@@ -1,0 +1,90 @@
+<!-- Blog Post: Cutting Deployment Time with GitHub Actions and Docker -->
+<section class="blog-post section" id="blog-post">
+  <div class="container">
+    <a href="#" class="blog-back" data-nav-section="blog"><i class="fa fa-angle-left" aria-hidden="true"></i> All Posts</a>
+    <article>
+      <header class="blog-post-header">
+        <h1>How I Cut API Deployment Time by 60% Using GitHub Actions &amp; Docker</h1>
+        <p class="blog-post-meta">4 Jan 2025 &middot; CI/CD &middot; Docker &middot; DevOps</p>
+      </header>
+
+      <p>When I joined the RDCD project at Orange Business Development, a deployment took about 25 minutes:
+        SSH into the server, pull, install dependencies, run migrations, restart services, then manually smoke-test
+        — with the API unavailable for part of that window. By the time I was done, a release took under
+        10 minutes end to end, with zero downtime. Here's the pipeline, step by step.</p>
+
+      <h2>Step 1: Containerize the application</h2>
+      <p>The first win had nothing to do with GitHub Actions. Moving the Laravel and NestJS services into
+        Docker images meant "deploy" stopped being "mutate a server" and became "swap a container". A
+        multi-stage Dockerfile keeps the final image small — build dependencies stay in the builder stage:</p>
+
+      <pre><code>FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY --from=builder /app/dist ./dist
+CMD ["node", "dist/main.js"]</code></pre>
+
+      <h2>Step 2: Build once, in CI</h2>
+      <p>Every push to <code>main</code> triggers a workflow that tests, builds the image, and pushes it to the
+        registry tagged with the commit SHA — so the artifact that passed tests is byte-for-byte the artifact
+        that ships:</p>
+
+      <pre><code>name: deploy
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci &amp;&amp; npm test
+      - uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: registry.example.com/api:${{ github.sha }}
+          cache-from: type=registry,ref=registry.example.com/api:buildcache
+          cache-to: type=registry,ref=registry.example.com/api:buildcache,mode=max</code></pre>
+
+      <p>Registry-backed layer caching was the single biggest time saver: a typical build dropped from
+        ~12 minutes to 3–4 because dependency layers are reused unless the lockfile changes.</p>
+
+      <h2>Step 3: Deploy from a self-hosted runner</h2>
+      <p>The production environment sat behind a restricted network, so instead of opening SSH from the
+        internet, we registered a self-hosted runner inside it. The deploy job pulls the new image, runs
+        migrations, and switches traffic. Secrets — database credentials, gateway keys — live in GitHub
+        Environments with required reviewers on production, never in the repository.</p>
+
+      <h2>Step 4: Zero-downtime cutover and rollback</h2>
+      <p>The new container starts alongside the old one and must pass a health check
+        (<code>/health</code> verifying database connectivity) before the reverse proxy switches upstreams.
+        Only then does the old container stop. Rollback is the same mechanism in reverse: because every image
+        is tagged by commit SHA, rolling back is redeploying the previous tag — about two minutes, with no
+        "fix forward under pressure" panic. Migrations stay backward-compatible (expand, migrate, contract)
+        so the previous version can always run against the current schema.</p>
+
+      <h2>Results</h2>
+      <ul>
+        <li>Deployment time: ~25 minutes manual → under 10 minutes, fully automated (60%+ reduction).</li>
+        <li>Downtime per release: a visible gap → zero, via health-checked container swap.</li>
+        <li>Rollback: re-provisioning by hand → redeploying a known-good SHA in ~2 minutes.</li>
+        <li>Release frequency went up — which was the real goal. Cheap deploys change how a team works:
+          small PRs ship the day they're merged instead of waiting for a weekly release window.</li>
+      </ul>
+
+      <p>None of this is exotic — containerize, build once, cache aggressively, health-check before cutover,
+        keep rollback one command away. The 60% number gets attention, but the zero-downtime cutover is what
+        the users actually noticed.</p>
+    </article>
+  </div>
+</section>
+<!-- Blog Post End -->

@@ -115,22 +115,40 @@ function setupEventListeners() {
 
 async function loadSection(section) {
   try {
-    const response = await fetch(routes[section] || routes.home);
+    const [base, slug] = section.split('/');
+    const url = base === 'blog' && slug
+      ? `partials/blog-posts/${encodeURIComponent(slug)}.html`
+      : routes[section] || routes.home;
+    const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const html = await response.text();
     mainContent.innerHTML = html;
+    mainContent.scrollTop = 0;
+    window.scrollTo(0, 0);
 
     navLinks.forEach(link => link.classList.remove('active'));
-    const activeLink = document.querySelector(`.nav a[href="#${section}"]`);
+    const activeLink = document.querySelector(`.nav a[href="#${base}"]`);
     if (activeLink) activeLink.classList.add('active');
 
     if (section === 'portfolio') initPortfolioFilter();
     else if (section === 'blog') initBlogPosts();
     else if (section === 'home') initTyped();
     else if (section === 'contact') initContactForm();
+
+    wireNavButtons();
   } catch (error) {
     console.error('Error loading section:', error);
   }
+}
+
+// Wire any [data-nav-section] element in the loaded content to SPA navigation
+function wireNavButtons() {
+  mainContent.querySelectorAll('[data-nav-section]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.preventDefault();
+      handleNavigation(el.getAttribute('data-nav-section'));
+    });
+  });
 }
 
 // --- Section initialisers ---
@@ -146,14 +164,6 @@ function initTyped() {
       backDelay: 2000
     });
   }
-
-  // Wire hero CTA buttons to SPA navigation
-  document.querySelectorAll('[data-nav-section]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.preventDefault();
-      handleNavigation(btn.getAttribute('data-nav-section'));
-    });
-  });
 }
 
 function initPortfolioFilter() {
@@ -197,7 +207,7 @@ function initBlogPosts() {
 
   blogContainer.innerHTML = blogs.map(blog => `
     <div class="blog-item padd-15" data-tags="${escapeHtml(blog.tags.map(t => t.toLowerCase()).join(' '))}">
-      <div class="blog-item-inner shadow-dark">
+      <div class="blog-item-inner shadow-dark" data-nav-section="blog/${escapeHtml(blog.slug)}" role="link" tabindex="0" aria-label="Read post: ${escapeHtml(blog.title)}">
         <div class="blog-img">
           <img src="${escapeHtml(blog.image)}" alt="${escapeHtml(blog.title)}" loading="lazy">
           <div class="blog-date">${escapeHtml(blog.date)}</div>
@@ -206,14 +216,19 @@ function initBlogPosts() {
           <h4 class="blog-title"><strong>${escapeHtml(blog.title)}</strong></h4>
           <p class="blog-description">${escapeHtml(blog.description)}</p>
           <p class="blog-tags">Tags: ${blog.tags.map(tag =>
-            `<a href="#" class="tag">${escapeHtml(tag)}</a>`).join(', ')}</p>
+            `<span class="tag">${escapeHtml(tag)}</span>`).join(', ')}</p>
+          <span class="blog-read-more">Read More <i class="fa fa-long-arrow-right" aria-hidden="true"></i></span>
         </div>
       </div>
     </div>
   `).join('');
 
-  blogContainer.addEventListener('click', e => {
-    if (e.target.closest('.tag')) e.preventDefault();
+  blogContainer.addEventListener('keydown', e => {
+    const card = e.target.closest('[data-nav-section]');
+    if (card && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      handleNavigation(card.getAttribute('data-nav-section'));
+    }
   });
 }
 
