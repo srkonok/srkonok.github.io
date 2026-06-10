@@ -1827,10 +1827,19 @@ body.dark .contact-form-wrap .form-control {
    ============================================= */
 
 @media (max-width: 767px) {
-    .hero-stats { gap: 16px; }
+    .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px 10px;
+        max-width: 320px;
+        margin-left: auto;
+        margin-right: auto;
+    }
     .hero-stat strong { font-size: 18px; }
     .achievement-grid { flex-direction: column; }
     .cert-grid { flex-direction: column; }
+    .cert-card,
+    .achievement-card { flex: 0 0 auto; }
     .portfolio-stats { gap: 10px; }
 }
 /* =============================================
