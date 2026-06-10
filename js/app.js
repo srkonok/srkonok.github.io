@@ -137,7 +137,7 @@ function initTyped() {
   const el = document.querySelector('.iTyped');
   if (!el || typeof window.ityped === 'undefined') return;
   window.ityped.init(el, {
-    strings: ['Software Engineer', 'Cloud Practitioner', 'Full-Stack Developer'],
+    strings: ['Software Engineer', 'Lecturer', 'DevOps Enthusiast'],
     loop: true,
     typeSpeed: 100,
     backSpeed: 50,
