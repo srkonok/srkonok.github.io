@@ -56,57 +56,7 @@ function updateSEO(base, slug) {
   document.querySelector('link[rel="canonical"]').setAttribute('href', canonical);
 }
 
-// --- Lightbox ---
-
-const lightbox = document.querySelector('.lightbox');
-const lightboxImg = lightbox.querySelector('.lightbox-img');
-const lightboxText = lightbox.querySelector('.caption-text');
-const lightboxCounter = lightbox.querySelector('.caption-counter');
-const lightboxClose = lightbox.querySelector('.lightbox-close');
-const prevBtn = lightbox.querySelector('.prev-item');
-const nextBtn = lightbox.querySelector('.next-item');
 let portfolioItems = [];
-let itemIndex = 0;
-
-function openLightbox(index) {
-  itemIndex = index;
-  updateLightbox();
-  lightbox.classList.add('open');
-  lightbox.focus();
-}
-
-function closeLightbox() {
-  lightbox.classList.remove('open');
-}
-
-function updateLightbox() {
-  const item = portfolioItems[itemIndex];
-  lightboxImg.src = item.querySelector('.portfolio-img img').getAttribute('src');
-  lightboxImg.alt = item.querySelector('h4').textContent;
-  lightboxText.textContent = item.querySelector('h4').textContent;
-  lightboxCounter.textContent = `${itemIndex + 1} of ${portfolioItems.length}`;
-}
-
-function prevItem() {
-  itemIndex = itemIndex === 0 ? portfolioItems.length - 1 : itemIndex - 1;
-  updateLightbox();
-}
-
-function nextItem() {
-  itemIndex = itemIndex === portfolioItems.length - 1 ? 0 : itemIndex + 1;
-  updateLightbox();
-}
-
-lightboxClose.addEventListener('click', closeLightbox);
-prevBtn.addEventListener('click', prevItem);
-nextBtn.addEventListener('click', nextItem);
-lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
-document.addEventListener('keydown', e => {
-  if (!lightbox.classList.contains('open')) return;
-  if (e.key === 'Escape') closeLightbox();
-  if (e.key === 'ArrowLeft') prevItem();
-  if (e.key === 'ArrowRight') nextItem();
-});
 
 // --- App bootstrap ---
 
