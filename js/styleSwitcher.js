@@ -27,6 +27,6 @@ bodySkin.forEach(radio => {
 document.addEventListener('DOMContentLoaded', () => {
     const savedStyle = localStorage.getItem('selectedStyle') || 'pink';
     setActiveStyle(savedStyle);
-    const savedSkin = localStorage.getItem('selectedSkin') || 'dark';
+    const savedSkin = localStorage.getItem('selectedSkin') || 'light';
     setBodySkin(savedSkin);
 });

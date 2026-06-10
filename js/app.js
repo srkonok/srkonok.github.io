@@ -5,6 +5,7 @@ const routes = {
   home: 'partials/main.html',
   about: 'partials/about.html',
   certification: 'partials/certification.html',
+  certifications: 'partials/certification.html',
   services: 'partials/service.html',
   portfolio: 'partials/portfolio.html',
   blog: 'partials/blog.html',
@@ -126,6 +127,7 @@ async function loadSection(section) {
     if (section === 'portfolio') initPortfolioFilter();
     else if (section === 'blog') initBlogPosts();
     else if (section === 'home') initTyped();
+    else if (section === 'contact') initContactForm();
   } catch (error) {
     console.error('Error loading section:', error);
   }
@@ -135,13 +137,22 @@ async function loadSection(section) {
 
 function initTyped() {
   const el = document.querySelector('.iTyped');
-  if (!el || typeof window.ityped === 'undefined') return;
-  window.ityped.init(el, {
-    strings: ['Software Engineer', 'Lecturer', 'DevOps Enthusiast'],
-    loop: true,
-    typeSpeed: 100,
-    backSpeed: 50,
-    backDelay: 2000
+  if (el && typeof window.ityped !== 'undefined') {
+    window.ityped.init(el, {
+      strings: ['Software Engineer', 'Lecturer', 'DevOps Enthusiast'],
+      loop: true,
+      typeSpeed: 100,
+      backSpeed: 50,
+      backDelay: 2000
+    });
+  }
+
+  // Wire hero CTA buttons to SPA navigation
+  document.querySelectorAll('[data-nav-section]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      handleNavigation(btn.getAttribute('data-nav-section'));
+    });
   });
 }
 
@@ -203,6 +214,35 @@ function initBlogPosts() {
 
   blogContainer.addEventListener('click', e => {
     if (e.target.closest('.tag')) e.preventDefault();
+  });
+}
+
+function initContactForm() {
+  const form = document.getElementById('contact-form');
+  if (!form) return;
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const btn = form.querySelector('button[type="submit"]');
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { Accept: 'application/json' }
+      });
+      if (res.ok) {
+        form.reset();
+        document.getElementById('form-success').style.display = 'block';
+        btn.textContent = 'Sent!';
+      } else {
+        btn.textContent = 'Error — try again';
+        btn.disabled = false;
+      }
+    } catch {
+      btn.textContent = 'Error — try again';
+      btn.disabled = false;
+    }
   });
 }
 
