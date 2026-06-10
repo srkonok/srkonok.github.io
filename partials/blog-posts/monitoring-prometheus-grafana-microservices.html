@@ -9,25 +9,25 @@
       </header>
 
       <p>We found out about our worst outage from a user's phone call. The API had been degrading for forty
-        minutes — queue workers silently dying, response times climbing — and nobody knew, because our
+        minutes (queue workers silently dying, response times climbing) and nobody knew, because our
         "monitoring" was a server CPU graph nobody looked at. That incident is why I set up Prometheus and
         Grafana properly. This is the setup that came out of it, and the principles behind it.</p>
 
       <h2>How Prometheus thinks</h2>
       <p>Prometheus is pull-based: it scrapes an HTTP <code>/metrics</code> endpoint on each target every few
-        seconds and stores the results as time series. That inversion matters — services don't need to know
+        seconds and stores the results as time series. That inversion matters: services don't need to know
         where the monitoring lives, and a service that stops answering its scrape is itself a signal
         (the <code>up</code> metric). Grafana then sits on top as the query and dashboard layer.</p>
 
       <h2>Instrument the four golden signals first</h2>
-      <p>It's tempting to export hundreds of metrics. Resist it. Google's SRE book got it right — four
+      <p>It's tempting to export hundreds of metrics. Resist it. Google's SRE book got it right: four
         signals cover most of what you need per service:</p>
       <ul>
-        <li><strong>Latency</strong> — request duration histograms, so you can read p50/p95/p99. Averages
+        <li><strong>Latency:</strong> request duration histograms, so you can read p50/p95/p99. Averages
           hide pain; the p99 is where users live.</li>
-        <li><strong>Traffic</strong> — requests per second, per route and method.</li>
-        <li><strong>Errors</strong> — rate of 5xx responses and unhandled exceptions.</li>
-        <li><strong>Saturation</strong> — how full things are: queue depth, DB connection pool usage,
+        <li><strong>Traffic:</strong> requests per second, per route and method.</li>
+        <li><strong>Errors:</strong> rate of 5xx responses and unhandled exceptions.</li>
+        <li><strong>Saturation:</strong> how full things are: queue depth, DB connection pool usage,
           memory pressure.</li>
       </ul>
       <p>For our Laravel services, a small middleware exports request counts and duration histograms;
@@ -35,18 +35,18 @@
 
       <h2>Exporters worth installing on day one</h2>
       <ul>
-        <li><strong>node_exporter</strong> — host CPU, memory, disk, network for every machine.</li>
-        <li><strong>Database exporters</strong> (mysqld_exporter / postgres_exporter) — connections, slow
+        <li><strong>node_exporter:</strong> host CPU, memory, disk, network for every machine.</li>
+        <li><strong>Database exporters</strong> (mysqld_exporter / postgres_exporter): connections, slow
           queries, replication lag.</li>
-        <li><strong>redis_exporter</strong> — memory usage, evictions, hit rate; doubles as queue monitoring
+        <li><strong>redis_exporter:</strong> memory usage, evictions, hit rate; doubles as queue monitoring
           if Redis backs your queues.</li>
-        <li><strong>blackbox_exporter</strong> — probes your public endpoints from outside, catching the
+        <li><strong>blackbox_exporter:</strong> probes your public endpoints from outside, catching the
           failures internal metrics can't see (DNS, TLS expiry, dead load balancer).</li>
       </ul>
 
       <h2>Alert on symptoms, not causes</h2>
       <p>Our first alert rules paged on causes: high CPU, low disk, restarted process. Most of those pages
-        were noise — high CPU at 3am that affects nobody doesn't deserve to wake anyone. The rewrite paged
+        were noise: high CPU at 3am that affects nobody doesn't deserve to wake anyone. The rewrite paged
         on <strong>symptoms users feel</strong>: error rate above 1% for 5 minutes, p95 latency over a
         threshold, queue depth growing without draining, an endpoint failing blackbox probes. Cause-level
         metrics stayed on dashboards for diagnosis. Pages dropped roughly 80%, and the remaining ones were
@@ -55,7 +55,7 @@
       <h2>Dashboards people actually use during incidents</h2>
       <p>One overview dashboard: a row per service showing its golden signals, plus a top row for
         business-level health (logins per minute, jobs processed). Anyone on the team should locate the sick
-        service in ten seconds. From there, per-service dashboards carry the detail — DB connections, cache
+        service in ten seconds. From there, per-service dashboards carry the detail: DB connections, cache
         hit rates, per-route latency. The mistake to avoid is the single forty-panel mega-dashboard: during
         an incident nobody can find anything in it.</p>
 
@@ -63,7 +63,7 @@
       <p>If you have nothing today: run Prometheus, node_exporter, and Grafana with docker-compose (an
         afternoon of work), add blackbox probes for your public endpoints, then instrument golden signals in
         your main service and write three symptom-based alerts. That minimal setup would have caught our
-        forty-minute silent outage in under two — which is the whole point.</p>
+        forty-minute silent outage in under two, which is the whole point.</p>
     </article>
   </div>
 </section>

@@ -10,13 +10,13 @@
 
       <p>When I audited our container registry, our main API image was 1.2GB. Every deploy pulled that across
         the network, every node cached copies of it, and the registry bill grew quietly each month. The image
-        contained compilers, dev dependencies, source maps, git history — none of which the running
+        contained compilers, dev dependencies, source maps, git history, none of which the running
         application needed. Multi-stage builds got it under 100MB. Here's how, and the details that actually
         matter.</p>
 
       <h2>Why images get fat</h2>
       <p>A naive Dockerfile installs build tools, pulls all dependencies, compiles the app, and ships
-        everything — because each instruction adds a layer and <strong>layers are never removed by later
+        everything, because each instruction adds a layer and <strong>layers are never removed by later
         instructions</strong>. A <code>RUN rm -rf node_modules</code> after the build doesn't shrink the
         image; the files still exist in the earlier layer. The only way to leave the build environment
         behind is to not ship it at all.</p>
@@ -48,7 +48,7 @@ CMD ["node", "dist/server.js"]</code></pre>
       <p>Multi-stage controls size; layer ordering controls speed. Docker caches each layer and invalidates
         the cache from the first changed instruction onward. The rule: <strong>copy what changes least,
         first.</strong> Copying <code>package.json</code> and installing dependencies before copying source
-        code means a code-only change reuses the cached dependency layer — our CI builds dropped from eight
+        code means a code-only change reuses the cached dependency layer; our CI builds dropped from eight
         minutes to under two on cache hits. Copying <code>. .</code> before <code>npm ci</code> throws that
         away on every commit.</p>
 
@@ -57,7 +57,7 @@ CMD ["node", "dist/server.js"]</code></pre>
         <li><strong>Alpine</strong> is the popular small option (~8MB), but its musl libc occasionally breaks
           native dependencies. Test before committing to it.</li>
         <li><strong>Slim variants</strong> (e.g. <code>debian-slim</code> based images) are slightly larger
-          but glibc-compatible — my default when Alpine misbehaves.</li>
+          but glibc-compatible, my default when Alpine misbehaves.</li>
         <li><strong>Distroless</strong> images contain no shell or package manager at all: smallest attack
           surface, but harder to debug inside. Good for mature services.</li>
       </ul>
@@ -68,7 +68,7 @@ CMD ["node", "dist/server.js"]</code></pre>
       <ul>
         <li>Node API: 1.2GB → 140MB. Go service: 850MB → 18MB. PHP-FPM app: 980MB → 240MB.</li>
         <li>Deploy pulls went from ~90 seconds to under 15.</li>
-        <li>Vulnerability scans got dramatically quieter — most CVEs lived in build tooling we no longer ship.</li>
+        <li>Vulnerability scans got dramatically quieter: most CVEs lived in build tooling we no longer ship.</li>
       </ul>
 
       <p>If you do one thing after reading this: open your main Dockerfile, check whether your build tools

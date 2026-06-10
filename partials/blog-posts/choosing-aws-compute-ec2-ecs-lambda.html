@@ -10,7 +10,7 @@
 
       <p>Every AWS project starts with the same question: where should this code actually run? I've shipped
         production workloads on EC2, ECS, and Lambda, and the honest answer is that all three are the right
-        choice — for different shapes of work. The mistake is picking based on familiarity or hype instead of
+        choice, just for different shapes of work. The mistake is picking based on familiarity or hype instead of
         the workload. Here's the decision framework I use.</p>
 
       <h2>Start with the workload shape, not the service</h2>
@@ -19,7 +19,7 @@
         <li><strong>Traffic pattern.</strong> Is it steady all day, spiky around events, or mostly idle with
           occasional bursts? Steady favours reserved capacity; spiky and idle favour pay-per-use.</li>
         <li><strong>Execution time.</strong> Requests measured in milliseconds, jobs measured in minutes, or
-          processes that never stop? Lambda caps out at 15 minutes — long-running work is disqualified
+          processes that never stop? Lambda caps out at 15 minutes, so long-running work is disqualified
           immediately.</li>
         <li><strong>State and dependencies.</strong> Does it need a local filesystem, a persistent connection
           pool, a specific runtime, or a GPU? The more it depends on its environment, the closer you stay
@@ -28,14 +28,14 @@
 
       <h2>When EC2 is the right answer</h2>
       <p>EC2 gets dismissed as "legacy" far too quickly. It's still the right call when you need full control
-        of the OS, when software wasn't built for containers, or when the workload runs hot 24/7 — a steady
+        of the OS, when software wasn't built for containers, or when the workload runs hot 24/7: a steady
         high-utilisation service on a reserved instance is often the cheapest option of the three. The price
         you pay is operational: patching, AMI management, capacity planning, and autoscaling configuration
         are all yours. If you're a small team, that overhead is real and recurring.</p>
 
       <h2>When ECS earns its place</h2>
       <p>ECS (especially with Fargate) is my default for web APIs and microservices. You get the deployment
-        consistency of containers — the same image runs in CI, staging, and production — without managing
+        consistency of containers (the same image runs in CI, staging, and production) without managing
         hosts. For the multi-service Laravel platform I worked on, ECS hit the sweet spot: services that run
         continuously, need predictable latency, and deploy several times a week. Rolling deployments,
         service discovery, and load balancer integration come essentially free. The cost model sits between
@@ -47,7 +47,7 @@
         messages, scheduled jobs, webhooks, and APIs with unpredictable or low traffic. Scale-to-zero means
         an endpoint that gets ten requests a day costs effectively nothing. The trade-offs are cold starts
         (manageable, but real for latency-sensitive APIs), the 15-minute limit, and an execution model that
-        punishes anything needing persistent connections — database connection pooling on Lambda requires
+        punishes anything needing persistent connections; database connection pooling on Lambda requires
         RDS Proxy or careful design.</p>
 
       <h2>My shortcut table</h2>
@@ -61,7 +61,7 @@
       </ul>
 
       <p>The meta-lesson: compute choice is a cost-and-operations decision dressed up as a technical one.
-        Pick the service whose trade-offs your team can actually afford to live with — and revisit the
+        Pick the service whose trade-offs your team can actually afford to live with, and revisit the
         decision when the traffic pattern changes, because it will.</p>
     </article>
   </div>

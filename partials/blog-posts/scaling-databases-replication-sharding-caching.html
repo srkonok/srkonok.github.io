@@ -8,10 +8,10 @@
         <p class="blog-post-meta">System Design &middot; Database &middot; Scalability</p>
       </header>
 
-      <p>Most systems don't die from too much code — they die from one overloaded database. Application
+      <p>Most systems don't die from too much code. They die from one overloaded database. Application
         servers scale horizontally almost for free; the database is where state lives, and state is hard to
         split. Having watched a single MySQL instance grind a 50,000-user platform to a halt, here is the
-        scaling ladder I follow — in order, because each rung adds complexity you then live with forever.</p>
+        scaling ladder I follow, in order, because each rung adds complexity you then live with forever.</p>
 
       <h2>Rung 0: Make sure you actually have a scaling problem</h2>
       <p>Before any architecture change, spend a week on the boring work: enable the slow query log, add the
@@ -20,29 +20,29 @@
         rung has no architectural cost, and it routinely buys 10× headroom.</p>
 
       <h2>Rung 1: Read replicas</h2>
-      <p>Most workloads are read-heavy — often 90%+ reads. Replication streams changes from the primary to
+      <p>Most workloads are read-heavy, often 90%+ reads. Replication streams changes from the primary to
         one or more replicas; writes go to the primary, reads spread across replicas. Managed services
         (RDS, Cloud SQL) make the setup almost trivial, and frameworks like Laravel support read/write
         connection splitting natively.</p>
-      <p>The cost is <strong>replication lag</strong>: a replica is always slightly behind. The classic bug —
+      <p>The cost is <strong>replication lag</strong>: a replica is always slightly behind. The classic bug:
         user saves a form, the next page reads from a replica, their change is "gone". The fix is
         read-your-own-writes routing: after a write, pin that user's reads to the primary for a few seconds.
         Decide this policy up front, not after the bug reports arrive.</p>
 
       <h2>Rung 2: Caching</h2>
-      <p>A Redis cache in front of the database absorbs repeated reads — cache-aside (check cache, on miss
+      <p>A Redis cache in front of the database absorbs repeated reads: cache-aside (check cache, on miss
         read DB and populate) covers most needs. The design effort goes into invalidation:</p>
       <ul>
         <li><strong>TTL-only</strong> for data that tolerates staleness (rankings, counts, catalogue pages).</li>
-        <li><strong>Explicit invalidation on write</strong> for data that must read fresh — delete the key,
+        <li><strong>Explicit invalidation on write</strong> for data that must read fresh: delete the key,
           let the next read repopulate it. Deleting beats updating: it avoids racing writers.</li>
-        <li><strong>Stampede protection</strong> for hot keys — when a popular key expires, a thousand
+        <li><strong>Stampede protection</strong> for hot keys: when a popular key expires, a thousand
           requests hit the DB simultaneously. Locking or staggered TTLs prevent it.</li>
       </ul>
-      <p>Caching is the highest-leverage rung — we cut primary DB load by ~70% — but every cached read is a
+      <p>Caching is the highest-leverage rung (we cut primary DB load by ~70%), but every cached read is a
         small consistency decision someone has to own.</p>
 
-      <h2>Rung 3: Sharding — the last resort</h2>
+      <h2>Rung 3: Sharding, the last resort</h2>
       <p>When a single primary can no longer handle the <em>write</em> volume, you split the data itself:
         each shard holds a subset of rows, keyed by something like user ID. This is the only rung that
         scales writes horizontally, and the only one that changes your application permanently:</p>
@@ -55,13 +55,13 @@
         <li><strong>Resharding is painful.</strong> Plan for more shards than you need (e.g. many virtual
           shards mapped onto few physical nodes) so growth is remapping, not re-splitting.</li>
       </ul>
-      <p>If a managed alternative fits — Aurora for read scale, DynamoDB or similar for naturally
-        partitionable data — seriously consider letting it do the sharding for you.</p>
+      <p>If a managed alternative fits (Aurora for read scale, DynamoDB or similar for naturally
+        partitionable data), seriously consider letting it do the sharding for you.</p>
 
       <h2>The ladder, summarised</h2>
       <p>Indexes and query fixes → read replicas → caching → sharding. Each rung up trades operational
         simplicity for capacity, and skipping rungs means paying complexity you didn't need yet. The systems
-        that age best are the ones that climbed exactly as high as their traffic forced them to — and no
+        that age best are the ones that climbed exactly as high as their traffic forced them to, and no
         higher.</p>
     </article>
   </div>

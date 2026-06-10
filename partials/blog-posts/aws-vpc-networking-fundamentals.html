@@ -9,12 +9,12 @@
       </header>
 
       <p>VPC networking is where most cloud engineers' mental models break down. You can deploy applications
-        for years on the default VPC without understanding what a route table does — until the day a Lambda
+        for years on the default VPC without understanding what a route table does, until the day a Lambda
         in a private subnet can't reach the internet, or a database is accidentally public. This post builds
         the mental model from scratch, the way I teach it.</p>
 
       <h2>The VPC is just an address space</h2>
-      <p>A VPC is a private slice of IP address space, defined by a CIDR block like <code>10.0.0.0/16</code> —
+      <p>A VPC is a private slice of IP address space, defined by a CIDR block like <code>10.0.0.0/16</code>:
         about 65,000 addresses that belong to you. Nothing in it can be reached from outside until you
         explicitly create a path. Every piece of VPC networking is about controlling those paths.</p>
 
@@ -22,7 +22,7 @@
       <p>A subnet is a smaller CIDR range inside the VPC, tied to one Availability Zone. Here's the part that
         unlocks everything: <strong>there is no "public subnet" checkbox.</strong> A subnet is public only
         because its route table sends <code>0.0.0.0/0</code> to an Internet Gateway. A private subnet is just
-        one whose route table doesn't. The subnet itself is identical — the route table defines its nature.</p>
+        one whose route table doesn't. The subnet itself is identical; the route table defines its nature.</p>
 
       <h2>Route tables: the actual decision-makers</h2>
       <p>Every subnet consults exactly one route table to decide where traffic goes. A typical pair looks
@@ -35,7 +35,7 @@
           <code>0.0.0.0/0 → nat-xxxx</code> (NAT Gateway). Resources can reach out, but nothing can
           reach in.</li>
       </ul>
-      <p>When something "can't connect", the route table is the first place I look — before security groups,
+      <p>When something "can't connect", the route table is the first place I look, before security groups,
         before DNS.</p>
 
       <h2>Internet Gateway vs NAT Gateway</h2>
@@ -43,7 +43,7 @@
         Gateway is a one-way door: instances in private subnets can initiate outbound connections (pulling
         packages, calling external APIs), but inbound connections are impossible. Two practical notes that
         bite people: a NAT Gateway must itself live in a <em>public</em> subnet, and it costs money per hour
-        and per GB — an idle NAT Gateway in three AZs is a surprisingly common line item on the bill.</p>
+        and per GB. An idle NAT Gateway in three AZs is a surprisingly common line item on the bill.</p>
 
       <h2>Security groups vs NACLs</h2>
       <ul>
@@ -60,7 +60,7 @@
       <ul>
         <li><strong>Public subnets:</strong> load balancers and NAT Gateways only. Nothing else.</li>
         <li><strong>Private app subnets:</strong> ECS tasks, EC2 instances, Lambda ENIs. Outbound via NAT.</li>
-        <li><strong>Private data subnets:</strong> RDS and ElastiCache, with no route to the internet at all —
+        <li><strong>Private data subnets:</strong> RDS and ElastiCache, with no route to the internet at all;
           their security groups accept traffic only from the app tier's security group.</li>
       </ul>
 
