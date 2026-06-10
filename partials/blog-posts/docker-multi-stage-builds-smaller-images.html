@@ -1,0 +1,80 @@
+<!-- Blog Post: Docker Multi-Stage Builds -->
+<section class="blog-post section" id="blog-post">
+  <div class="container">
+    <a href="#" class="blog-back" data-nav-section="blog"><i class="fa fa-angle-left" aria-hidden="true"></i> All Posts</a>
+    <article>
+      <header class="blog-post-header">
+        <h1>Docker Multi-Stage Builds: From 1.2GB Images to 90MB</h1>
+        <p class="blog-post-meta">10 Jun 2025 &middot; Docker &middot; DevOps &middot; CI/CD</p>
+      </header>
+
+      <p>When I audited our container registry, our main API image was 1.2GB. Every deploy pulled that across
+        the network, every node cached copies of it, and the registry bill grew quietly each month. The image
+        contained compilers, dev dependencies, source maps, git history — none of which the running
+        application needed. Multi-stage builds got it under 100MB. Here's how, and the details that actually
+        matter.</p>
+
+      <h2>Why images get fat</h2>
+      <p>A naive Dockerfile installs build tools, pulls all dependencies, compiles the app, and ships
+        everything — because each instruction adds a layer and <strong>layers are never removed by later
+        instructions</strong>. A <code>RUN rm -rf node_modules</code> after the build doesn't shrink the
+        image; the files still exist in the earlier layer. The only way to leave the build environment
+        behind is to not ship it at all.</p>
+
+      <h2>The multi-stage pattern</h2>
+      <p>Multi-stage builds use multiple <code>FROM</code> statements in one Dockerfile. Each <code>FROM</code>
+        starts a fresh stage; the final stage copies in only the artifacts it needs:</p>
+      <pre><code># Stage 1: build
+FROM node:20 AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build &amp;&amp; npm prune --omit=dev
+
+# Stage 2: runtime
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+USER node
+CMD ["node", "dist/server.js"]</code></pre>
+      <p>Only the final stage becomes the image. The 700MB of compilers and dev dependencies in stage one
+        simply never ship. The same pattern works for PHP (composer install in a build stage, copy
+        <code>vendor/</code> into a slim FPM image), Go (build in the full SDK image, ship in
+        <code>scratch</code> or distroless), and Python.</p>
+
+      <h2>Layer ordering is half the win</h2>
+      <p>Multi-stage controls size; layer ordering controls speed. Docker caches each layer and invalidates
+        the cache from the first changed instruction onward. The rule: <strong>copy what changes least,
+        first.</strong> Copying <code>package.json</code> and installing dependencies before copying source
+        code means a code-only change reuses the cached dependency layer — our CI builds dropped from eight
+        minutes to under two on cache hits. Copying <code>. .</code> before <code>npm ci</code> throws that
+        away on every commit.</p>
+
+      <h2>Choosing the runtime base image</h2>
+      <ul>
+        <li><strong>Alpine</strong> is the popular small option (~8MB), but its musl libc occasionally breaks
+          native dependencies. Test before committing to it.</li>
+        <li><strong>Slim variants</strong> (e.g. <code>debian-slim</code> based images) are slightly larger
+          but glibc-compatible — my default when Alpine misbehaves.</li>
+        <li><strong>Distroless</strong> images contain no shell or package manager at all: smallest attack
+          surface, but harder to debug inside. Good for mature services.</li>
+      </ul>
+      <p>Whichever you choose, add a <code>.dockerignore</code> (exclude <code>.git</code>,
+        <code>node_modules</code>, logs, local env files) and run as a non-root user in the final stage.</p>
+
+      <h2>The results</h2>
+      <ul>
+        <li>Node API: 1.2GB → 140MB. Go service: 850MB → 18MB. PHP-FPM app: 980MB → 240MB.</li>
+        <li>Deploy pulls went from ~90 seconds to under 15.</li>
+        <li>Vulnerability scans got dramatically quieter — most CVEs lived in build tooling we no longer ship.</li>
+      </ul>
+
+      <p>If you do one thing after reading this: open your main Dockerfile, check whether your build tools
+        ship to production, and add a second stage if they do. It's an afternoon of work that pays back on
+        every single deploy.</p>
+    </article>
+  </div>
+</section>
+<!-- Blog Post End -->

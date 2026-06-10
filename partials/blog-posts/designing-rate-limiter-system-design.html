@@ -1,0 +1,71 @@
+<!-- Blog Post: Designing a Rate Limiter -->
+<section class="blog-post section" id="blog-post">
+  <div class="container">
+    <a href="#" class="blog-back" data-nav-section="blog"><i class="fa fa-angle-left" aria-hidden="true"></i> All Posts</a>
+    <article>
+      <header class="blog-post-header">
+        <h1>Designing a Rate Limiter: A Practical System Design Walkthrough</h1>
+        <p class="blog-post-meta">12 Dec 2025 &middot; System Design &middot; Backend &middot; Scalability</p>
+      </header>
+
+      <p>The rate limiter is a system design classic for good reason: it's small enough to design in an hour,
+        yet it forces you through real distributed-systems trade-offs — accuracy vs memory, consistency vs
+        latency, what happens when your dependencies fail. I've both built one for a production API and used
+        it as an interview exercise. Here's the walkthrough I'd give either audience.</p>
+
+      <h2>Requirements first</h2>
+      <p>Before algorithms, pin down the contract: limit requests per client (API key, user ID, or IP) to N
+        per time window; reject excess with HTTP 429 and a <code>Retry-After</code> header; add minimal
+        latency (single-digit milliseconds); and work correctly when the API runs on many servers. That last
+        requirement is the one that shapes the whole design.</p>
+
+      <h2>Choosing the algorithm</h2>
+      <ul>
+        <li><strong>Fixed window</strong> — count requests per minute, reset on the boundary. Trivial, but a
+          client can send 2× the limit straddling the boundary (100 requests at 11:59:59, 100 more at
+          12:00:00).</li>
+        <li><strong>Sliding window log</strong> — store a timestamp per request and count the last 60 seconds.
+          Perfectly accurate, but memory grows with traffic; storing a timestamp per request defeats the
+          purpose at scale.</li>
+        <li><strong>Sliding window counter</strong> — weight the previous window's count by overlap. Good
+          accuracy, constant memory. A solid choice.</li>
+        <li><strong>Token bucket</strong> — a bucket of N tokens refilling at a steady rate; each request
+          spends one. Constant memory, and it naturally allows short bursts while enforcing the average
+          rate — which usually matches what you actually want for an API.</li>
+      </ul>
+      <p>I default to token bucket: clients get burst tolerance, you get a steady average, and the state per
+        client is just two numbers — token count and last-refill timestamp.</p>
+
+      <h2>Where the limiter lives</h2>
+      <p>In-process middleware is fine for one server. The moment you run multiple instances behind a load
+        balancer, per-server counters mean a client's effective limit is N × servers. So state moves to a
+        shared store — Redis is the standard answer: fast, supports atomic operations, and TTLs expire idle
+        clients' state automatically. The check must be atomic (read tokens, refill, decrement, write back),
+        otherwise two concurrent requests both pass on the last token. A small Lua script executed in Redis
+        does the whole sequence as one atomic operation.</p>
+
+      <h2>The distributed-systems questions</h2>
+      <ul>
+        <li><strong>What if Redis goes down?</strong> Decide explicitly: fail open (allow traffic, lose
+          protection) or fail closed (reject traffic to protect the backend). For most public APIs I fail
+          open and alert loudly — rate limiting is protection, not a security boundary.</li>
+        <li><strong>Latency.</strong> Each request now pays a Redis round trip. Keep Redis in the same
+          network/AZ; at higher scale, batch token grants locally (each server takes tokens in chunks),
+          trading a little accuracy for a big latency win.</li>
+        <li><strong>Hot keys.</strong> One aggressive client hammering a single Redis key is rarely a problem
+          in practice, but at very large scale you shard clients across Redis nodes by key hash.</li>
+      </ul>
+
+      <h2>The API contract matters too</h2>
+      <p>Return <code>429 Too Many Requests</code> with <code>Retry-After</code>, and include
+        <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, and <code>X-RateLimit-Reset</code>
+        on every response — well-behaved clients will throttle themselves before you have to. That single
+        practice reduced our actual 429 rate more than any tuning of the algorithm did.</p>
+
+      <p>The pattern to take away: the algorithm is the easy 20%. The real design work is state placement,
+        atomicity, failure behaviour, and the client contract — and that's true of most system design
+        problems, not just this one.</p>
+    </article>
+  </div>
+</section>
+<!-- Blog Post End -->
