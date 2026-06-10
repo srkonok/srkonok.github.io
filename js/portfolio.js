@@ -5,7 +5,7 @@ export const blogs = [
     date: "15 Mar 2024",
     title: "AWS Cloud Practitioner: My Study Plan and Key Takeaways",
     description:
-      "Passed the AWS Certified Cloud Practitioner exam in January 2024. In this post I share the exact study plan I followed — from core services (EC2, S3, RDS, Lambda, IAM) to the exam strategies that helped me pass on the first attempt. Includes free and paid resources.",
+      "Passed the AWS Certified Cloud Practitioner exam in January 2024. In this post I share the exact study plan I followed, from core services (EC2, S3, RDS, Lambda, IAM) to the exam strategies that helped me pass on the first attempt. Includes free and paid resources.",
     tags: ["AWS", "Cloud", "Certification"],
   },
   {
@@ -14,7 +14,7 @@ export const blogs = [
     date: "28 Oct 2024",
     title: "Building a Multi-District Government System with Laravel Microservices",
     description:
-      "How our team built and deployed the RDCD Beneficiary Training Management System — a microservice-based platform serving 50,000+ beneficiaries across multiple districts under the Ministry of Local Government. Covers architecture decisions, CI/CD pipeline setup with GitHub Actions, and lessons learned.",
+      "How our team built and deployed the RDCD Beneficiary Training Management System, a microservice-based platform serving 50,000+ beneficiaries across multiple districts under the Ministry of Local Government. Covers architecture decisions, CI/CD pipeline setup with GitHub Actions, and lessons learned.",
     tags: ["Laravel", "Microservices", "Backend"],
   },
   {
@@ -32,7 +32,7 @@ export const blogs = [
     date: "18 Feb 2025",
     title: "EC2 vs ECS vs Lambda: Choosing the Right Compute on AWS",
     description:
-      "Every AWS project starts with the same question: where should this code actually run? A practical decision framework for picking between EC2, ECS, and Lambda based on workload shape, traffic patterns, cost, and operational overhead — with real examples from production systems I've run on all three.",
+      "Every AWS project starts with the same question: where should this code actually run? A practical decision framework for picking between EC2, ECS, and Lambda based on workload shape, traffic patterns, cost, and operational overhead, with real examples from production systems I've run on all three.",
     tags: ["AWS", "Cloud", "Architecture"],
   },
   {
@@ -41,7 +41,7 @@ export const blogs = [
     date: "22 Apr 2025",
     title: "AWS VPC Networking Explained: Subnets, Route Tables, and NAT",
     description:
-      "VPC networking is where most cloud engineers' mental models break down. This post builds one from scratch: public vs private subnets, route tables, internet and NAT gateways, and security groups vs NACLs — ending with the three-tier network layout I use as a default for production workloads.",
+      "VPC networking is where most cloud engineers' mental models break down. This post builds one from scratch: public vs private subnets, route tables, internet and NAT gateways, and security groups vs NACLs, ending with the three-tier network layout I use as a default for production workloads.",
     tags: ["AWS", "Cloud", "Networking"],
   },
   {
@@ -59,7 +59,7 @@ export const blogs = [
     date: "5 Sep 2025",
     title: "Monitoring Microservices with Prometheus and Grafana",
     description:
-      "You can't fix what you can't see. How I set up Prometheus and Grafana to monitor a multi-service Laravel platform — the four golden signals, exporters worth installing, alert rules that page for symptoms instead of causes, and the dashboard layout my team actually uses during incidents.",
+      "You can't fix what you can't see. How I set up Prometheus and Grafana to monitor a multi-service Laravel platform: the four golden signals, exporters worth installing, alert rules that page for symptoms instead of causes, and the dashboard layout my team actually uses during incidents.",
     tags: ["DevOps", "Monitoring", "Microservices"],
   },
   {
@@ -77,7 +77,7 @@ export const blogs = [
     date: "20 Mar 2026",
     title: "Scaling Databases: Replication, Sharding, and Caching in Practice",
     description:
-      "Most systems don't die from too much code — they die from one overloaded database. The scaling ladder I follow in practice: indexing and query fixes first, then read replicas, then caching with Redis, and only then sharding — with the failure modes each step introduces along the way.",
+      "Most systems don't die from too much code. They die from one overloaded database. The scaling ladder I follow in practice: indexing and query fixes first, then read replicas, then caching with Redis, and only then sharding, with the failure modes each step introduces along the way.",
     tags: ["System Design", "Database", "Scalability"],
   },
 ];

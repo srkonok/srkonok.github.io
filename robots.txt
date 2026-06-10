@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /partials/
+
+Sitemap: https://srkonok.github.io/sitemap.xml

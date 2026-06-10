@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EC2 vs ECS vs Lambda: Choosing the Right Compute on AWS — Md Shahriar Rahman</title>
+  <meta name="description" content="Every AWS project starts with the same question: where should this code actually run? A practical decision framework for picking between EC2, ECS, and Lambda based on workload shape, traffic patterns, cost, and operational overhead, with real examples from production systems I've run on all three.">
+  <meta name="author" content="Md Shahriar Rahman">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://srkonok.github.io/blog/choosing-aws-compute-ec2-ecs-lambda/">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="EC2 vs ECS vs Lambda: Choosing the Right Compute on AWS — Md Shahriar Rahman">
+  <meta property="og:description" content="Every AWS project starts with the same question: where should this code actually run? A practical decision framework for picking between EC2, ECS, and Lambda based on workload shape, traffic patterns, cost, and operational overhead, with real examples from production systems I've run on all three.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://srkonok.github.io/blog/choosing-aws-compute-ec2-ecs-lambda/">
+  <meta property="og:site_name" content="Md Shahriar Rahman">
+  <meta property="og:image" content="https://srkonok.github.io/images/blog/aws-compute.jpg">
+  <meta property="article:published_time" content="2025-02-18">
+  <meta property="article:author" content="Md Shahriar Rahman">
+  <meta property="article:tag" content="AWS">
+  <meta property="article:tag" content="Cloud">
+  <meta property="article:tag" content="Architecture">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="EC2 vs ECS vs Lambda: Choosing the Right Compute on AWS">
+  <meta name="twitter:description" content="Every AWS project starts with the same question: where should this code actually run? A practical decision framework for picking between EC2, ECS, and Lambda based on workload shape, traffic patterns, cost, and operational overhead, with real examples from production systems I've run on all three.">
+  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/aws-compute.jpg">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"EC2 vs ECS vs Lambda: Choosing the Right Compute on AWS","description":"Every AWS project starts with the same question: where should this code actually run? A practical decision framework for picking between EC2, ECS, and Lambda based on workload shape, traffic patterns, cost, and operational overhead, with real examples from production systems I've run on all three.","image":"https://srkonok.github.io/images/blog/aws-compute.jpg","datePublished":"2025-02-18","dateModified":"2025-02-18","keywords":"AWS, Cloud, Architecture","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/choosing-aws-compute-ec2-ecs-lambda/"}}</script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
+  <style>
+  :root { --skin: #ec1839; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
+         color: #302e4d; background: #f2f2fc; }
+  .site-header { background: #fdf9ff; border-bottom: 1px solid #e8dfec; padding: 18px 20px; }
+  .site-header .wrap { max-width: 760px; margin: auto; display: flex;
+                       justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .site-header a.brand { font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 22px;
+                         color: #302e4d; text-decoration: none; }
+  .site-header a.brand span { color: var(--skin); }
+  .site-header nav a { color: #504e70; text-decoration: none; font-weight: 600;
+                       font-size: 15px; margin-left: 18px; }
+  .site-header nav a:hover { color: var(--skin); }
+  main { max-width: 760px; margin: auto; padding: 50px 20px 70px; }
+  h1 { font-family: 'Rubik', sans-serif; font-size: 34px; line-height: 1.25; margin-bottom: 12px; }
+  .post-meta { color: #7c7a93; font-size: 15px; margin-bottom: 35px; }
+  article h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin: 35px 0 14px; }
+  article p { margin-bottom: 16px; color: #504e70; }
+  article ul, article ol { margin: 0 0 16px 22px; color: #504e70; }
+  article li { margin-bottom: 8px; }
+  article strong { color: #302e4d; }
+  article a { color: var(--skin); }
+  article code { background: #e8e6f5; padding: 2px 6px; border-radius: 4px;
+                 font-size: 0.9em; color: #302e4d; }
+  article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
+                overflow-x: auto; margin-bottom: 16px; }
+  article pre code { background: none; color: inherit; padding: 0; }
+  .post-tags { margin-top: 35px; }
+  .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
+                    font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
+  .back-link { display: inline-block; margin-top: 35px; color: var(--skin);
+               text-decoration: none; font-weight: 600; }
+  .post-list { list-style: none; }
+  .post-list li { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 10px;
+                  padding: 24px; margin-bottom: 20px; }
+  .post-list h2 { font-family: 'Rubik', sans-serif; font-size: 22px; margin-bottom: 8px; }
+  .post-list h2 a { color: #302e4d; text-decoration: none; }
+  .post-list h2 a:hover { color: var(--skin); }
+  .post-list .date { color: #7c7a93; font-size: 14px; margin-bottom: 10px; }
+  .post-list p { color: #504e70; font-size: 15px; }
+  footer { text-align: center; padding: 25px 20px 45px; color: #7c7a93; font-size: 14px; }
+  footer a { color: var(--skin); text-decoration: none; }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/">Shahriar<span>.</span></a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/blog/">Blog</a>
+        <a href="/#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <article>
+
+      <header class="blog-post-header">
+        <h1>EC2 vs ECS vs Lambda: Choosing the Right Compute on AWS</h1>
+        <p class="post-meta">18 Feb 2025 &middot; AWS &middot; Cloud &middot; Architecture</p>
+      </header>
+
+      <p>Every AWS project starts with the same question: where should this code actually run? I've shipped
+        production workloads on EC2, ECS, and Lambda, and the honest answer is that all three are the right
+        choice — for different shapes of work. The mistake is picking based on familiarity or hype instead of
+        the workload. Here's the decision framework I use.</p>
+
+      <h2>Start with the workload shape, not the service</h2>
+      <p>Before comparing services, answer three questions about the workload itself:</p>
+      <ul>
+        <li><strong>Traffic pattern.</strong> Is it steady all day, spiky around events, or mostly idle with
+          occasional bursts? Steady favours reserved capacity; spiky and idle favour pay-per-use.</li>
+        <li><strong>Execution time.</strong> Requests measured in milliseconds, jobs measured in minutes, or
+          processes that never stop? Lambda caps out at 15 minutes — long-running work is disqualified
+          immediately.</li>
+        <li><strong>State and dependencies.</strong> Does it need a local filesystem, a persistent connection
+          pool, a specific runtime, or a GPU? The more it depends on its environment, the closer you stay
+          to a real server.</li>
+      </ul>
+
+      <h2>When EC2 is the right answer</h2>
+      <p>EC2 gets dismissed as "legacy" far too quickly. It's still the right call when you need full control
+        of the OS, when software wasn't built for containers, or when the workload runs hot 24/7 — a steady
+        high-utilisation service on a reserved instance is often the cheapest option of the three. The price
+        you pay is operational: patching, AMI management, capacity planning, and autoscaling configuration
+        are all yours. If you're a small team, that overhead is real and recurring.</p>
+
+      <h2>When ECS earns its place</h2>
+      <p>ECS (especially with Fargate) is my default for web APIs and microservices. You get the deployment
+        consistency of containers — the same image runs in CI, staging, and production — without managing
+        hosts. For the multi-service Laravel platform I worked on, ECS hit the sweet spot: services that run
+        continuously, need predictable latency, and deploy several times a week. Rolling deployments,
+        service discovery, and load balancer integration come essentially free. The cost model sits between
+        EC2 and Lambda: you pay for provisioned task capacity, not per request, so mostly-idle services
+        still cost money.</p>
+
+      <h2>When Lambda wins</h2>
+      <p>Lambda is unbeatable for event-driven and bursty work: processing uploads from S3, reacting to queue
+        messages, scheduled jobs, webhooks, and APIs with unpredictable or low traffic. Scale-to-zero means
+        an endpoint that gets ten requests a day costs effectively nothing. The trade-offs are cold starts
+        (manageable, but real for latency-sensitive APIs), the 15-minute limit, and an execution model that
+        punishes anything needing persistent connections — database connection pooling on Lambda requires
+        RDS Proxy or careful design.</p>
+
+      <h2>My shortcut table</h2>
+      <ul>
+        <li><strong>Steady 24/7 service, high utilisation:</strong> EC2 with reserved instances.</li>
+        <li><strong>Containerised services, frequent deploys, predictable latency:</strong> ECS on Fargate.</li>
+        <li><strong>Event-driven, bursty, or low-traffic workloads:</strong> Lambda.</li>
+        <li><strong>Genuinely unsure:</strong> start with Lambda or Fargate. It's far easier to move from
+          serverless to servers when traffic justifies it than to claw back the ops time you spent managing
+          instances you didn't need.</li>
+      </ul>
+
+      <p>The meta-lesson: compute choice is a cost-and-operations decision dressed up as a technical one.
+        Pick the service whose trade-offs your team can actually afford to live with — and revisit the
+        decision when the traffic pattern changes, because it will.</p>
+    
+      <p class="post-tags"><span>AWS</span> <span>Cloud</span> <span>Architecture</span></p>
+    </article>
+    <a class="back-link" href="/blog/">&larr; All posts</a>
+  </main>
+  <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Building a Multi-District Government System with Laravel Microservices — Md Shahriar Rahman</title>
+  <meta name="description" content="How our team built and deployed the RDCD Beneficiary Training Management System, a microservice-based platform serving 50,000+ beneficiaries across multiple districts under the Ministry of Local Government. Covers architecture decisions, CI/CD pipeline setup with GitHub Actions, and lessons learned.">
+  <meta name="author" content="Md Shahriar Rahman">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://srkonok.github.io/blog/laravel-microservices-government-system/">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="Building a Multi-District Government System with Laravel Microservices — Md Shahriar Rahman">
+  <meta property="og:description" content="How our team built and deployed the RDCD Beneficiary Training Management System, a microservice-based platform serving 50,000+ beneficiaries across multiple districts under the Ministry of Local Government. Covers architecture decisions, CI/CD pipeline setup with GitHub Actions, and lessons learned.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://srkonok.github.io/blog/laravel-microservices-government-system/">
+  <meta property="og:site_name" content="Md Shahriar Rahman">
+  <meta property="og:image" content="https://srkonok.github.io/images/blog/framework.webp">
+  <meta property="article:published_time" content="2024-10-28">
+  <meta property="article:author" content="Md Shahriar Rahman">
+  <meta property="article:tag" content="Laravel">
+  <meta property="article:tag" content="Microservices">
+  <meta property="article:tag" content="Backend">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Building a Multi-District Government System with Laravel Microservices">
+  <meta name="twitter:description" content="How our team built and deployed the RDCD Beneficiary Training Management System, a microservice-based platform serving 50,000+ beneficiaries across multiple districts under the Ministry of Local Government. Covers architecture decisions, CI/CD pipeline setup with GitHub Actions, and lessons learned.">
+  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/framework.webp">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Building a Multi-District Government System with Laravel Microservices","description":"How our team built and deployed the RDCD Beneficiary Training Management System, a microservice-based platform serving 50,000+ beneficiaries across multiple districts under the Ministry of Local Government. Covers architecture decisions, CI/CD pipeline setup with GitHub Actions, and lessons learned.","image":"https://srkonok.github.io/images/blog/framework.webp","datePublished":"2024-10-28","dateModified":"2024-10-28","keywords":"Laravel, Microservices, Backend","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/laravel-microservices-government-system/"}}</script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
+  <style>
+  :root { --skin: #ec1839; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
+         color: #302e4d; background: #f2f2fc; }
+  .site-header { background: #fdf9ff; border-bottom: 1px solid #e8dfec; padding: 18px 20px; }
+  .site-header .wrap { max-width: 760px; margin: auto; display: flex;
+                       justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .site-header a.brand { font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 22px;
+                         color: #302e4d; text-decoration: none; }
+  .site-header a.brand span { color: var(--skin); }
+  .site-header nav a { color: #504e70; text-decoration: none; font-weight: 600;
+                       font-size: 15px; margin-left: 18px; }
+  .site-header nav a:hover { color: var(--skin); }
+  main { max-width: 760px; margin: auto; padding: 50px 20px 70px; }
+  h1 { font-family: 'Rubik', sans-serif; font-size: 34px; line-height: 1.25; margin-bottom: 12px; }
+  .post-meta { color: #7c7a93; font-size: 15px; margin-bottom: 35px; }
+  article h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin: 35px 0 14px; }
+  article p { margin-bottom: 16px; color: #504e70; }
+  article ul, article ol { margin: 0 0 16px 22px; color: #504e70; }
+  article li { margin-bottom: 8px; }
+  article strong { color: #302e4d; }
+  article a { color: var(--skin); }
+  article code { background: #e8e6f5; padding: 2px 6px; border-radius: 4px;
+                 font-size: 0.9em; color: #302e4d; }
+  article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
+                overflow-x: auto; margin-bottom: 16px; }
+  article pre code { background: none; color: inherit; padding: 0; }
+  .post-tags { margin-top: 35px; }
+  .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
+                    font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
+  .back-link { display: inline-block; margin-top: 35px; color: var(--skin);
+               text-decoration: none; font-weight: 600; }
+  .post-list { list-style: none; }
+  .post-list li { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 10px;
+                  padding: 24px; margin-bottom: 20px; }
+  .post-list h2 { font-family: 'Rubik', sans-serif; font-size: 22px; margin-bottom: 8px; }
+  .post-list h2 a { color: #302e4d; text-decoration: none; }
+  .post-list h2 a:hover { color: var(--skin); }
+  .post-list .date { color: #7c7a93; font-size: 14px; margin-bottom: 10px; }
+  .post-list p { color: #504e70; font-size: 15px; }
+  footer { text-align: center; padding: 25px 20px 45px; color: #7c7a93; font-size: 14px; }
+  footer a { color: var(--skin); text-decoration: none; }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/">Shahriar<span>.</span></a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/blog/">Blog</a>
+        <a href="/#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <article>
+
+      <header class="blog-post-header">
+        <h1>Building a Multi-District Government System with Laravel Microservices</h1>
+        <p class="post-meta">28 Oct 2024 &middot; Laravel &middot; Microservices &middot; Backend</p>
+      </header>
+
+      <p>At Orange Business Development I worked on the Beneficiary Training Management System for RDCD,
+        under Bangladesh's Ministry of Local Government — a platform that manages training programs for
+        50,000+ beneficiaries across multiple districts. This post covers the architecture decisions we made,
+        why we split the system into services, and what I'd do differently.</p>
+
+      <h2>The problem</h2>
+      <p>A beneficiary's journey runs through several distinct workflows: registration and verification,
+        training batch allocation, attendance, allowance disbursement, and reporting up the administrative
+        hierarchy (union → upazila → district → ministry). Each workflow has different load patterns and
+        different stakeholders. Registration spikes when a new program opens; reporting spikes at month-end;
+        disbursement must integrate with a payment gateway and absolutely cannot double-pay.</p>
+
+      <h2>Why microservices — and why "boring" ones</h2>
+      <p>We didn't start from a microservices ideology. We started from three operational facts:</p>
+      <ul>
+        <li>The payment/disbursement flow needed stricter change control and isolation than the rest of the
+          system — a bug in reporting must never take down payments.</li>
+        <li>District-level usage was bursty, and we wanted to scale the public-facing registration service
+          independently of the internal admin tools.</li>
+        <li>Multiple teams worked in parallel, and a modular monolith was already showing merge-conflict and
+          deploy-coupling pain.</li>
+      </ul>
+      <p>So we split along those seams: a registration/beneficiary service, a training-management service, a
+        disbursement service wrapping the payment gateway, and a notification service (SMS and in-app, since
+        many beneficiaries are reachable only by phone). Each service is a plain Laravel application with its
+        own MySQL schema, fronted by REST APIs — no exotic infrastructure, because a government project's
+        operations team has to be able to run it for years.</p>
+
+      <h2>Decisions that paid off</h2>
+      <ul>
+        <li><strong>Database-per-service, reporting via read replicas.</strong> Cross-service joins were the
+          biggest temptation. Instead, the reporting service consumed read-only replicas and materialized
+          nightly aggregates, which kept month-end reporting load away from transactional databases.</li>
+        <li><strong>Idempotency keys on disbursement.</strong> Every payment request carries a client-generated
+          idempotency key, stored with a unique constraint. Gateway timeouts and retries were common; duplicate
+          payments were not.</li>
+        <li><strong>API performance work where it mattered.</strong> Profiling showed most latency came from a
+          handful of N+1 query patterns and unindexed filters on district/batch lookups. Fixing those — eager
+          loading, composite indexes, and response caching on slow-changing reference data — improved
+          processing speed by roughly 35% across the 30+ endpoints we built and optimized.</li>
+        <li><strong>CI/CD from day one.</strong> GitHub Actions pipelines per service — test, build, deploy —
+          cut our deployment time by about 60% compared with the manual process the project started with, and
+          made multi-service releases predictable. (I wrote up the pipeline details in a separate post.)</li>
+      </ul>
+
+      <h2>Lessons learned</h2>
+      <ul>
+        <li><strong>Service boundaries are organizational, not just technical.</strong> Our split worked
+          because it matched who changed what. A split that crosses one team's daily workflow just adds
+          network calls to their day.</li>
+        <li><strong>Government scale is about spikes and audits, not steady throughput.</strong> Design for
+          the enrollment-deadline day and the auditor's CSV export, not the average Tuesday.</li>
+        <li><strong>Keep the number of services small.</strong> Four services with clear contracts beat twelve
+          with fuzzy ones. Every additional service is another deploy pipeline, another log stream, another
+          thing the operations handover document must explain.</li>
+        <li><strong>Notifications deserve their own service earlier than you think.</strong> SMS gateways fail
+          independently of everything else; isolating that failure mode saved us repeatedly.</li>
+      </ul>
+
+      <p>The system is live at <a href="https://service.rdcd.gov.bd/" target="_blank" rel="noopener noreferrer">service.rdcd.gov.bd</a>,
+        serving beneficiaries across multiple districts. If you're building something similar — especially in a
+        public-sector context — I'm happy to compare notes; reach me through the contact page.</p>
+    
+      <p class="post-tags"><span>Laravel</span> <span>Microservices</span> <span>Backend</span></p>
+    </article>
+    <a class="back-link" href="/blog/">&larr; All posts</a>
+  </main>
+  <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Monitoring Microservices with Prometheus and Grafana — Md Shahriar Rahman</title>
+  <meta name="description" content="You can't fix what you can't see. How I set up Prometheus and Grafana to monitor a multi-service Laravel platform: the four golden signals, exporters worth installing, alert rules that page for symptoms instead of causes, and the dashboard layout my team actually uses during incidents.">
+  <meta name="author" content="Md Shahriar Rahman">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://srkonok.github.io/blog/monitoring-prometheus-grafana-microservices/">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="Monitoring Microservices with Prometheus and Grafana — Md Shahriar Rahman">
+  <meta property="og:description" content="You can't fix what you can't see. How I set up Prometheus and Grafana to monitor a multi-service Laravel platform: the four golden signals, exporters worth installing, alert rules that page for symptoms instead of causes, and the dashboard layout my team actually uses during incidents.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://srkonok.github.io/blog/monitoring-prometheus-grafana-microservices/">
+  <meta property="og:site_name" content="Md Shahriar Rahman">
+  <meta property="og:image" content="https://srkonok.github.io/images/blog/monitoring.jpg">
+  <meta property="article:published_time" content="2025-09-05">
+  <meta property="article:author" content="Md Shahriar Rahman">
+  <meta property="article:tag" content="DevOps">
+  <meta property="article:tag" content="Monitoring">
+  <meta property="article:tag" content="Microservices">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Monitoring Microservices with Prometheus and Grafana">
+  <meta name="twitter:description" content="You can't fix what you can't see. How I set up Prometheus and Grafana to monitor a multi-service Laravel platform: the four golden signals, exporters worth installing, alert rules that page for symptoms instead of causes, and the dashboard layout my team actually uses during incidents.">
+  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/monitoring.jpg">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Monitoring Microservices with Prometheus and Grafana","description":"You can't fix what you can't see. How I set up Prometheus and Grafana to monitor a multi-service Laravel platform: the four golden signals, exporters worth installing, alert rules that page for symptoms instead of causes, and the dashboard layout my team actually uses during incidents.","image":"https://srkonok.github.io/images/blog/monitoring.jpg","datePublished":"2025-09-05","dateModified":"2025-09-05","keywords":"DevOps, Monitoring, Microservices","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/monitoring-prometheus-grafana-microservices/"}}</script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
+  <style>
+  :root { --skin: #ec1839; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
+         color: #302e4d; background: #f2f2fc; }
+  .site-header { background: #fdf9ff; border-bottom: 1px solid #e8dfec; padding: 18px 20px; }
+  .site-header .wrap { max-width: 760px; margin: auto; display: flex;
+                       justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .site-header a.brand { font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 22px;
+                         color: #302e4d; text-decoration: none; }
+  .site-header a.brand span { color: var(--skin); }
+  .site-header nav a { color: #504e70; text-decoration: none; font-weight: 600;
+                       font-size: 15px; margin-left: 18px; }
+  .site-header nav a:hover { color: var(--skin); }
+  main { max-width: 760px; margin: auto; padding: 50px 20px 70px; }
+  h1 { font-family: 'Rubik', sans-serif; font-size: 34px; line-height: 1.25; margin-bottom: 12px; }
+  .post-meta { color: #7c7a93; font-size: 15px; margin-bottom: 35px; }
+  article h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin: 35px 0 14px; }
+  article p { margin-bottom: 16px; color: #504e70; }
+  article ul, article ol { margin: 0 0 16px 22px; color: #504e70; }
+  article li { margin-bottom: 8px; }
+  article strong { color: #302e4d; }
+  article a { color: var(--skin); }
+  article code { background: #e8e6f5; padding: 2px 6px; border-radius: 4px;
+                 font-size: 0.9em; color: #302e4d; }
+  article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
+                overflow-x: auto; margin-bottom: 16px; }
+  article pre code { background: none; color: inherit; padding: 0; }
+  .post-tags { margin-top: 35px; }
+  .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
+                    font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
+  .back-link { display: inline-block; margin-top: 35px; color: var(--skin);
+               text-decoration: none; font-weight: 600; }
+  .post-list { list-style: none; }
+  .post-list li { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 10px;
+                  padding: 24px; margin-bottom: 20px; }
+  .post-list h2 { font-family: 'Rubik', sans-serif; font-size: 22px; margin-bottom: 8px; }
+  .post-list h2 a { color: #302e4d; text-decoration: none; }
+  .post-list h2 a:hover { color: var(--skin); }
+  .post-list .date { color: #7c7a93; font-size: 14px; margin-bottom: 10px; }
+  .post-list p { color: #504e70; font-size: 15px; }
+  footer { text-align: center; padding: 25px 20px 45px; color: #7c7a93; font-size: 14px; }
+  footer a { color: var(--skin); text-decoration: none; }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/">Shahriar<span>.</span></a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/blog/">Blog</a>
+        <a href="/#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <article>
+
+      <header class="blog-post-header">
+        <h1>Monitoring Microservices with Prometheus and Grafana</h1>
+        <p class="post-meta">5 Sep 2025 &middot; DevOps &middot; Monitoring &middot; Microservices</p>
+      </header>
+
+      <p>We found out about our worst outage from a user's phone call. The API had been degrading for forty
+        minutes — queue workers silently dying, response times climbing — and nobody knew, because our
+        "monitoring" was a server CPU graph nobody looked at. That incident is why I set up Prometheus and
+        Grafana properly. This is the setup that came out of it, and the principles behind it.</p>
+
+      <h2>How Prometheus thinks</h2>
+      <p>Prometheus is pull-based: it scrapes an HTTP <code>/metrics</code> endpoint on each target every few
+        seconds and stores the results as time series. That inversion matters — services don't need to know
+        where the monitoring lives, and a service that stops answering its scrape is itself a signal
+        (the <code>up</code> metric). Grafana then sits on top as the query and dashboard layer.</p>
+
+      <h2>Instrument the four golden signals first</h2>
+      <p>It's tempting to export hundreds of metrics. Resist it. Google's SRE book got it right — four
+        signals cover most of what you need per service:</p>
+      <ul>
+        <li><strong>Latency</strong> — request duration histograms, so you can read p50/p95/p99. Averages
+          hide pain; the p99 is where users live.</li>
+        <li><strong>Traffic</strong> — requests per second, per route and method.</li>
+        <li><strong>Errors</strong> — rate of 5xx responses and unhandled exceptions.</li>
+        <li><strong>Saturation</strong> — how full things are: queue depth, DB connection pool usage,
+          memory pressure.</li>
+      </ul>
+      <p>For our Laravel services, a small middleware exports request counts and duration histograms;
+        queue workers export jobs processed, failed, and current queue depth.</p>
+
+      <h2>Exporters worth installing on day one</h2>
+      <ul>
+        <li><strong>node_exporter</strong> — host CPU, memory, disk, network for every machine.</li>
+        <li><strong>Database exporters</strong> (mysqld_exporter / postgres_exporter) — connections, slow
+          queries, replication lag.</li>
+        <li><strong>redis_exporter</strong> — memory usage, evictions, hit rate; doubles as queue monitoring
+          if Redis backs your queues.</li>
+        <li><strong>blackbox_exporter</strong> — probes your public endpoints from outside, catching the
+          failures internal metrics can't see (DNS, TLS expiry, dead load balancer).</li>
+      </ul>
+
+      <h2>Alert on symptoms, not causes</h2>
+      <p>Our first alert rules paged on causes: high CPU, low disk, restarted process. Most of those pages
+        were noise — high CPU at 3am that affects nobody doesn't deserve to wake anyone. The rewrite paged
+        on <strong>symptoms users feel</strong>: error rate above 1% for 5 minutes, p95 latency over a
+        threshold, queue depth growing without draining, an endpoint failing blackbox probes. Cause-level
+        metrics stayed on dashboards for diagnosis. Pages dropped roughly 80%, and the remaining ones were
+        real.</p>
+
+      <h2>Dashboards people actually use during incidents</h2>
+      <p>One overview dashboard: a row per service showing its golden signals, plus a top row for
+        business-level health (logins per minute, jobs processed). Anyone on the team should locate the sick
+        service in ten seconds. From there, per-service dashboards carry the detail — DB connections, cache
+        hit rates, per-route latency. The mistake to avoid is the single forty-panel mega-dashboard: during
+        an incident nobody can find anything in it.</p>
+
+      <h2>Where to start</h2>
+      <p>If you have nothing today: run Prometheus, node_exporter, and Grafana with docker-compose (an
+        afternoon of work), add blackbox probes for your public endpoints, then instrument golden signals in
+        your main service and write three symptom-based alerts. That minimal setup would have caught our
+        forty-minute silent outage in under two — which is the whole point.</p>
+    
+      <p class="post-tags"><span>DevOps</span> <span>Monitoring</span> <span>Microservices</span></p>
+    </article>
+    <a class="back-link" href="/blog/">&larr; All posts</a>
+  </main>
+  <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>
+</body>
+</html>

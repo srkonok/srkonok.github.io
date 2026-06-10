@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AWS VPC Networking Explained: Subnets, Route Tables, and NAT — Md Shahriar Rahman</title>
+  <meta name="description" content="VPC networking is where most cloud engineers' mental models break down. This post builds one from scratch: public vs private subnets, route tables, internet and NAT gateways, and security groups vs NACLs, ending with the three-tier network layout I use as a default for production workloads.">
+  <meta name="author" content="Md Shahriar Rahman">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://srkonok.github.io/blog/aws-vpc-networking-fundamentals/">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="AWS VPC Networking Explained: Subnets, Route Tables, and NAT — Md Shahriar Rahman">
+  <meta property="og:description" content="VPC networking is where most cloud engineers' mental models break down. This post builds one from scratch: public vs private subnets, route tables, internet and NAT gateways, and security groups vs NACLs, ending with the three-tier network layout I use as a default for production workloads.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://srkonok.github.io/blog/aws-vpc-networking-fundamentals/">
+  <meta property="og:site_name" content="Md Shahriar Rahman">
+  <meta property="og:image" content="https://srkonok.github.io/images/blog/vpc-networking.jpg">
+  <meta property="article:published_time" content="2025-04-22">
+  <meta property="article:author" content="Md Shahriar Rahman">
+  <meta property="article:tag" content="AWS">
+  <meta property="article:tag" content="Cloud">
+  <meta property="article:tag" content="Networking">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AWS VPC Networking Explained: Subnets, Route Tables, and NAT">
+  <meta name="twitter:description" content="VPC networking is where most cloud engineers' mental models break down. This post builds one from scratch: public vs private subnets, route tables, internet and NAT gateways, and security groups vs NACLs, ending with the three-tier network layout I use as a default for production workloads.">
+  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/vpc-networking.jpg">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"AWS VPC Networking Explained: Subnets, Route Tables, and NAT","description":"VPC networking is where most cloud engineers' mental models break down. This post builds one from scratch: public vs private subnets, route tables, internet and NAT gateways, and security groups vs NACLs, ending with the three-tier network layout I use as a default for production workloads.","image":"https://srkonok.github.io/images/blog/vpc-networking.jpg","datePublished":"2025-04-22","dateModified":"2025-04-22","keywords":"AWS, Cloud, Networking","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/aws-vpc-networking-fundamentals/"}}</script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
+  <style>
+  :root { --skin: #ec1839; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
+         color: #302e4d; background: #f2f2fc; }
+  .site-header { background: #fdf9ff; border-bottom: 1px solid #e8dfec; padding: 18px 20px; }
+  .site-header .wrap { max-width: 760px; margin: auto; display: flex;
+                       justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .site-header a.brand { font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 22px;
+                         color: #302e4d; text-decoration: none; }
+  .site-header a.brand span { color: var(--skin); }
+  .site-header nav a { color: #504e70; text-decoration: none; font-weight: 600;
+                       font-size: 15px; margin-left: 18px; }
+  .site-header nav a:hover { color: var(--skin); }
+  main { max-width: 760px; margin: auto; padding: 50px 20px 70px; }
+  h1 { font-family: 'Rubik', sans-serif; font-size: 34px; line-height: 1.25; margin-bottom: 12px; }
+  .post-meta { color: #7c7a93; font-size: 15px; margin-bottom: 35px; }
+  article h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin: 35px 0 14px; }
+  article p { margin-bottom: 16px; color: #504e70; }
+  article ul, article ol { margin: 0 0 16px 22px; color: #504e70; }
+  article li { margin-bottom: 8px; }
+  article strong { color: #302e4d; }
+  article a { color: var(--skin); }
+  article code { background: #e8e6f5; padding: 2px 6px; border-radius: 4px;
+                 font-size: 0.9em; color: #302e4d; }
+  article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
+                overflow-x: auto; margin-bottom: 16px; }
+  article pre code { background: none; color: inherit; padding: 0; }
+  .post-tags { margin-top: 35px; }
+  .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
+                    font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
+  .back-link { display: inline-block; margin-top: 35px; color: var(--skin);
+               text-decoration: none; font-weight: 600; }
+  .post-list { list-style: none; }
+  .post-list li { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 10px;
+                  padding: 24px; margin-bottom: 20px; }
+  .post-list h2 { font-family: 'Rubik', sans-serif; font-size: 22px; margin-bottom: 8px; }
+  .post-list h2 a { color: #302e4d; text-decoration: none; }
+  .post-list h2 a:hover { color: var(--skin); }
+  .post-list .date { color: #7c7a93; font-size: 14px; margin-bottom: 10px; }
+  .post-list p { color: #504e70; font-size: 15px; }
+  footer { text-align: center; padding: 25px 20px 45px; color: #7c7a93; font-size: 14px; }
+  footer a { color: var(--skin); text-decoration: none; }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/">Shahriar<span>.</span></a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/blog/">Blog</a>
+        <a href="/#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <article>
+
+      <header class="blog-post-header">
+        <h1>AWS VPC Networking Explained: Subnets, Route Tables, and NAT</h1>
+        <p class="post-meta">22 Apr 2025 &middot; AWS &middot; Cloud &middot; Networking</p>
+      </header>
+
+      <p>VPC networking is where most cloud engineers' mental models break down. You can deploy applications
+        for years on the default VPC without understanding what a route table does — until the day a Lambda
+        in a private subnet can't reach the internet, or a database is accidentally public. This post builds
+        the mental model from scratch, the way I teach it.</p>
+
+      <h2>The VPC is just an address space</h2>
+      <p>A VPC is a private slice of IP address space, defined by a CIDR block like <code>10.0.0.0/16</code> —
+        about 65,000 addresses that belong to you. Nothing in it can be reached from outside until you
+        explicitly create a path. Every piece of VPC networking is about controlling those paths.</p>
+
+      <h2>Subnets: public is a configuration, not a type</h2>
+      <p>A subnet is a smaller CIDR range inside the VPC, tied to one Availability Zone. Here's the part that
+        unlocks everything: <strong>there is no "public subnet" checkbox.</strong> A subnet is public only
+        because its route table sends <code>0.0.0.0/0</code> to an Internet Gateway. A private subnet is just
+        one whose route table doesn't. The subnet itself is identical — the route table defines its nature.</p>
+
+      <h2>Route tables: the actual decision-makers</h2>
+      <p>Every subnet consults exactly one route table to decide where traffic goes. A typical pair looks
+        like this:</p>
+      <ul>
+        <li><strong>Public route table:</strong> <code>10.0.0.0/16 → local</code>,
+          <code>0.0.0.0/0 → igw-xxxx</code> (Internet Gateway). Resources here can be reached from the
+          internet if they have a public IP.</li>
+        <li><strong>Private route table:</strong> <code>10.0.0.0/16 → local</code>,
+          <code>0.0.0.0/0 → nat-xxxx</code> (NAT Gateway). Resources can reach out, but nothing can
+          reach in.</li>
+      </ul>
+      <p>When something "can't connect", the route table is the first place I look — before security groups,
+        before DNS.</p>
+
+      <h2>Internet Gateway vs NAT Gateway</h2>
+      <p>The Internet Gateway is a two-way door: traffic in and out, for resources with public IPs. The NAT
+        Gateway is a one-way door: instances in private subnets can initiate outbound connections (pulling
+        packages, calling external APIs), but inbound connections are impossible. Two practical notes that
+        bite people: a NAT Gateway must itself live in a <em>public</em> subnet, and it costs money per hour
+        and per GB — an idle NAT Gateway in three AZs is a surprisingly common line item on the bill.</p>
+
+      <h2>Security groups vs NACLs</h2>
+      <ul>
+        <li><strong>Security groups</strong> are stateful firewalls on the instance/ENI level. Allow inbound
+          port 443 and the response traffic is automatically allowed back out. They only have allow rules.
+          This is where 95% of your access control should live.</li>
+        <li><strong>NACLs</strong> are stateless filters at the subnet boundary. They evaluate rules in order,
+          support deny rules, and require you to open ephemeral ports for return traffic. I leave them at
+          their defaults unless I need a hard subnet-level block.</li>
+      </ul>
+
+      <h2>The three-tier layout I use by default</h2>
+      <p>For production workloads, my starting template across two AZs:</p>
+      <ul>
+        <li><strong>Public subnets:</strong> load balancers and NAT Gateways only. Nothing else.</li>
+        <li><strong>Private app subnets:</strong> ECS tasks, EC2 instances, Lambda ENIs. Outbound via NAT.</li>
+        <li><strong>Private data subnets:</strong> RDS and ElastiCache, with no route to the internet at all —
+          their security groups accept traffic only from the app tier's security group.</li>
+      </ul>
+
+      <p>Once you internalise that subnets are defined by their route tables and that security group
+        references (not IP ranges) should chain your tiers together, VPC design stops being mysterious.
+        Draw the route tables first; everything else follows.</p>
+    
+      <p class="post-tags"><span>AWS</span> <span>Cloud</span> <span>Networking</span></p>
+    </article>
+    <a class="back-link" href="/blog/">&larr; All posts</a>
+  </main>
+  <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>
+</body>
+</html>

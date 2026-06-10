@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AWS Cloud Practitioner: My Study Plan and Key Takeaways — Md Shahriar Rahman</title>
+  <meta name="description" content="Passed the AWS Certified Cloud Practitioner exam in January 2024. In this post I share the exact study plan I followed, from core services (EC2, S3, RDS, Lambda, IAM) to the exam strategies that helped me pass on the first attempt. Includes free and paid resources.">
+  <meta name="author" content="Md Shahriar Rahman">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://srkonok.github.io/blog/aws-cloud-practitioner-study-plan/">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="AWS Cloud Practitioner: My Study Plan and Key Takeaways — Md Shahriar Rahman">
+  <meta property="og:description" content="Passed the AWS Certified Cloud Practitioner exam in January 2024. In this post I share the exact study plan I followed, from core services (EC2, S3, RDS, Lambda, IAM) to the exam strategies that helped me pass on the first attempt. Includes free and paid resources.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://srkonok.github.io/blog/aws-cloud-practitioner-study-plan/">
+  <meta property="og:site_name" content="Md Shahriar Rahman">
+  <meta property="og:image" content="https://srkonok.github.io/images/blog/learn.jpeg">
+  <meta property="article:published_time" content="2024-03-15">
+  <meta property="article:author" content="Md Shahriar Rahman">
+  <meta property="article:tag" content="AWS">
+  <meta property="article:tag" content="Cloud">
+  <meta property="article:tag" content="Certification">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AWS Cloud Practitioner: My Study Plan and Key Takeaways">
+  <meta name="twitter:description" content="Passed the AWS Certified Cloud Practitioner exam in January 2024. In this post I share the exact study plan I followed, from core services (EC2, S3, RDS, Lambda, IAM) to the exam strategies that helped me pass on the first attempt. Includes free and paid resources.">
+  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/learn.jpeg">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"AWS Cloud Practitioner: My Study Plan and Key Takeaways","description":"Passed the AWS Certified Cloud Practitioner exam in January 2024. In this post I share the exact study plan I followed, from core services (EC2, S3, RDS, Lambda, IAM) to the exam strategies that helped me pass on the first attempt. Includes free and paid resources.","image":"https://srkonok.github.io/images/blog/learn.jpeg","datePublished":"2024-03-15","dateModified":"2024-03-15","keywords":"AWS, Cloud, Certification","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/aws-cloud-practitioner-study-plan/"}}</script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
+  <style>
+  :root { --skin: #ec1839; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
+         color: #302e4d; background: #f2f2fc; }
+  .site-header { background: #fdf9ff; border-bottom: 1px solid #e8dfec; padding: 18px 20px; }
+  .site-header .wrap { max-width: 760px; margin: auto; display: flex;
+                       justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .site-header a.brand { font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 22px;
+                         color: #302e4d; text-decoration: none; }
+  .site-header a.brand span { color: var(--skin); }
+  .site-header nav a { color: #504e70; text-decoration: none; font-weight: 600;
+                       font-size: 15px; margin-left: 18px; }
+  .site-header nav a:hover { color: var(--skin); }
+  main { max-width: 760px; margin: auto; padding: 50px 20px 70px; }
+  h1 { font-family: 'Rubik', sans-serif; font-size: 34px; line-height: 1.25; margin-bottom: 12px; }
+  .post-meta { color: #7c7a93; font-size: 15px; margin-bottom: 35px; }
+  article h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin: 35px 0 14px; }
+  article p { margin-bottom: 16px; color: #504e70; }
+  article ul, article ol { margin: 0 0 16px 22px; color: #504e70; }
+  article li { margin-bottom: 8px; }
+  article strong { color: #302e4d; }
+  article a { color: var(--skin); }
+  article code { background: #e8e6f5; padding: 2px 6px; border-radius: 4px;
+                 font-size: 0.9em; color: #302e4d; }
+  article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
+                overflow-x: auto; margin-bottom: 16px; }
+  article pre code { background: none; color: inherit; padding: 0; }
+  .post-tags { margin-top: 35px; }
+  .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
+                    font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
+  .back-link { display: inline-block; margin-top: 35px; color: var(--skin);
+               text-decoration: none; font-weight: 600; }
+  .post-list { list-style: none; }
+  .post-list li { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 10px;
+                  padding: 24px; margin-bottom: 20px; }
+  .post-list h2 { font-family: 'Rubik', sans-serif; font-size: 22px; margin-bottom: 8px; }
+  .post-list h2 a { color: #302e4d; text-decoration: none; }
+  .post-list h2 a:hover { color: var(--skin); }
+  .post-list .date { color: #7c7a93; font-size: 14px; margin-bottom: 10px; }
+  .post-list p { color: #504e70; font-size: 15px; }
+  footer { text-align: center; padding: 25px 20px 45px; color: #7c7a93; font-size: 14px; }
+  footer a { color: var(--skin); text-decoration: none; }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/">Shahriar<span>.</span></a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/blog/">Blog</a>
+        <a href="/#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <article>
+
+      <header class="blog-post-header">
+        <h1>AWS Cloud Practitioner: My Study Plan and Key Takeaways</h1>
+        <p class="post-meta">15 Mar 2024 &middot; AWS &middot; Cloud &middot; Certification</p>
+      </header>
+
+      <p>In January 2024 I passed the AWS Certified Cloud Practitioner (CLF-C02) exam on my first attempt.
+        I had already been working with AWS in production for over a year — Lambda, EC2, S3, RDS — but the
+        exam tests breadth, not depth, and plenty of experienced engineers fail it by underestimating exactly
+        that. Here is the plan I followed, and what I would tell anyone preparing for it.</p>
+
+      <h2>Know what the exam actually tests</h2>
+      <p>CLF-C02 has four domains: Cloud Concepts (24%), Security and Compliance (30%), Cloud Technology
+        and Services (34%), and Billing, Pricing and Support (12%). The surprise for most working engineers
+        is the last one — you can deploy serverless APIs all day and still not know the difference between
+        a Savings Plan and a Reserved Instance, or which Support plan includes a Technical Account Manager.
+        I lost the most practice-test marks in billing and support, so that's where I spent my final week.</p>
+
+      <h2>My four-week plan</h2>
+      <ul>
+        <li><strong>Week 1 — Core services.</strong> A structured video course end to end. I treated even the
+          familiar services (EC2, S3, RDS, Lambda, IAM) as revision: the exam asks about them the way AWS
+          describes them, which is not always the way you think about them day to day.</li>
+        <li><strong>Week 2 — Security and the shared responsibility model.</strong> This is the single
+          highest-yield topic. Learn exactly what AWS is responsible for versus the customer, and the roles of
+          IAM users, groups, roles, and policies. Many questions are answerable from this model alone.</li>
+        <li><strong>Week 3 — Billing, pricing, and support plans.</strong> Pricing calculators, Cost Explorer
+          versus Budgets, consolidated billing in AWS Organizations, and the four support tiers. Pure
+          memorization, but a quarter of the exam in practice.</li>
+        <li><strong>Week 4 — Practice exams only.</strong> I did timed practice tests, reviewed every wrong
+          answer, and re-read the relevant FAQ or whitepaper section. I didn't sit the real exam until I was
+          consistently scoring above 85%.</li>
+      </ul>
+
+      <h2>Resources I used</h2>
+      <ul>
+        <li><strong>Free:</strong> AWS Skill Builder's official Cloud Practitioner learning path, the
+          "Overview of Amazon Web Services" whitepaper, and the AWS pricing and support FAQ pages.</li>
+        <li><strong>Paid:</strong> One video course for structure and one set of practice exams. The practice
+          exams mattered more — the score reports show you which domain is weak while you still have time
+          to fix it.</li>
+      </ul>
+
+      <h2>Exam-day strategies that helped</h2>
+      <ul>
+        <li>Eliminate first. Most questions have two obviously wrong options; the real decision is between two
+          plausible ones, and the wording ("most cost-effective", "least operational overhead") tells you
+          which AWS wants.</li>
+        <li>Flag and move on. The exam gives you 90 minutes for 65 questions — time is not the constraint,
+          but momentum is. I flagged anything I hesitated on and cleared the easy ones first.</li>
+        <li>Think like AWS marketing, not like an engineer. The "right" answer is the managed service, the
+          pay-as-you-go option, the one that scales automatically.</li>
+      </ul>
+
+      <h2>Was it worth it?</h2>
+      <p>For me, yes — but with the right expectations. The Cloud Practitioner cert won't prove deep technical
+        skill; my production work does that. What it did was force me to fill the gaps experience doesn't cover
+        (billing, support, compliance programs), and it gave me a verified credential to anchor the cloud part
+        of my profile. It also became the foundation for the Cloud Computing course I later taught at AUST —
+        the exam's structure turned out to be a surprisingly good syllabus outline.</p>
+
+      <p>If you're working backend or DevOps and touching AWS at all, I'd recommend it as a four-week side
+        project. Start with a practice test to find your blind spots — they're rarely where you expect.</p>
+    
+      <p class="post-tags"><span>AWS</span> <span>Cloud</span> <span>Certification</span></p>
+    </article>
+    <a class="back-link" href="/blog/">&larr; All posts</a>
+  </main>
+  <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>
+</body>
+</html>

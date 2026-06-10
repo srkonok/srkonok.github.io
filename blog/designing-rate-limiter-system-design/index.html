@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Designing a Rate Limiter: A Practical System Design Walkthrough — Md Shahriar Rahman</title>
+  <meta name="description" content="The rate limiter is a system design classic because it packs real distributed-systems tradeoffs into a small problem. Token bucket vs sliding window, where the limiter lives in your architecture, keeping counters in Redis, and what changes when you go from one server to twenty.">
+  <meta name="author" content="Md Shahriar Rahman">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://srkonok.github.io/blog/designing-rate-limiter-system-design/">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="Designing a Rate Limiter: A Practical System Design Walkthrough — Md Shahriar Rahman">
+  <meta property="og:description" content="The rate limiter is a system design classic because it packs real distributed-systems tradeoffs into a small problem. Token bucket vs sliding window, where the limiter lives in your architecture, keeping counters in Redis, and what changes when you go from one server to twenty.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://srkonok.github.io/blog/designing-rate-limiter-system-design/">
+  <meta property="og:site_name" content="Md Shahriar Rahman">
+  <meta property="og:image" content="https://srkonok.github.io/images/blog/rate-limiter.jpg">
+  <meta property="article:published_time" content="2025-12-12">
+  <meta property="article:author" content="Md Shahriar Rahman">
+  <meta property="article:tag" content="System Design">
+  <meta property="article:tag" content="Backend">
+  <meta property="article:tag" content="Scalability">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Designing a Rate Limiter: A Practical System Design Walkthrough">
+  <meta name="twitter:description" content="The rate limiter is a system design classic because it packs real distributed-systems tradeoffs into a small problem. Token bucket vs sliding window, where the limiter lives in your architecture, keeping counters in Redis, and what changes when you go from one server to twenty.">
+  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/rate-limiter.jpg">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Designing a Rate Limiter: A Practical System Design Walkthrough","description":"The rate limiter is a system design classic because it packs real distributed-systems tradeoffs into a small problem. Token bucket vs sliding window, where the limiter lives in your architecture, keeping counters in Redis, and what changes when you go from one server to twenty.","image":"https://srkonok.github.io/images/blog/rate-limiter.jpg","datePublished":"2025-12-12","dateModified":"2025-12-12","keywords":"System Design, Backend, Scalability","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/designing-rate-limiter-system-design/"}}</script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
+  <style>
+  :root { --skin: #ec1839; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
+         color: #302e4d; background: #f2f2fc; }
+  .site-header { background: #fdf9ff; border-bottom: 1px solid #e8dfec; padding: 18px 20px; }
+  .site-header .wrap { max-width: 760px; margin: auto; display: flex;
+                       justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .site-header a.brand { font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 22px;
+                         color: #302e4d; text-decoration: none; }
+  .site-header a.brand span { color: var(--skin); }
+  .site-header nav a { color: #504e70; text-decoration: none; font-weight: 600;
+                       font-size: 15px; margin-left: 18px; }
+  .site-header nav a:hover { color: var(--skin); }
+  main { max-width: 760px; margin: auto; padding: 50px 20px 70px; }
+  h1 { font-family: 'Rubik', sans-serif; font-size: 34px; line-height: 1.25; margin-bottom: 12px; }
+  .post-meta { color: #7c7a93; font-size: 15px; margin-bottom: 35px; }
+  article h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin: 35px 0 14px; }
+  article p { margin-bottom: 16px; color: #504e70; }
+  article ul, article ol { margin: 0 0 16px 22px; color: #504e70; }
+  article li { margin-bottom: 8px; }
+  article strong { color: #302e4d; }
+  article a { color: var(--skin); }
+  article code { background: #e8e6f5; padding: 2px 6px; border-radius: 4px;
+                 font-size: 0.9em; color: #302e4d; }
+  article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
+                overflow-x: auto; margin-bottom: 16px; }
+  article pre code { background: none; color: inherit; padding: 0; }
+  .post-tags { margin-top: 35px; }
+  .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
+                    font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
+  .back-link { display: inline-block; margin-top: 35px; color: var(--skin);
+               text-decoration: none; font-weight: 600; }
+  .post-list { list-style: none; }
+  .post-list li { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 10px;
+                  padding: 24px; margin-bottom: 20px; }
+  .post-list h2 { font-family: 'Rubik', sans-serif; font-size: 22px; margin-bottom: 8px; }
+  .post-list h2 a { color: #302e4d; text-decoration: none; }
+  .post-list h2 a:hover { color: var(--skin); }
+  .post-list .date { color: #7c7a93; font-size: 14px; margin-bottom: 10px; }
+  .post-list p { color: #504e70; font-size: 15px; }
+  footer { text-align: center; padding: 25px 20px 45px; color: #7c7a93; font-size: 14px; }
+  footer a { color: var(--skin); text-decoration: none; }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/">Shahriar<span>.</span></a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/blog/">Blog</a>
+        <a href="/#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <article>
+
+      <header class="blog-post-header">
+        <h1>Designing a Rate Limiter: A Practical System Design Walkthrough</h1>
+        <p class="post-meta">12 Dec 2025 &middot; System Design &middot; Backend &middot; Scalability</p>
+      </header>
+
+      <p>The rate limiter is a system design classic for good reason: it's small enough to design in an hour,
+        yet it forces you through real distributed-systems trade-offs — accuracy vs memory, consistency vs
+        latency, what happens when your dependencies fail. I've both built one for a production API and used
+        it as an interview exercise. Here's the walkthrough I'd give either audience.</p>
+
+      <h2>Requirements first</h2>
+      <p>Before algorithms, pin down the contract: limit requests per client (API key, user ID, or IP) to N
+        per time window; reject excess with HTTP 429 and a <code>Retry-After</code> header; add minimal
+        latency (single-digit milliseconds); and work correctly when the API runs on many servers. That last
+        requirement is the one that shapes the whole design.</p>
+
+      <h2>Choosing the algorithm</h2>
+      <ul>
+        <li><strong>Fixed window</strong> — count requests per minute, reset on the boundary. Trivial, but a
+          client can send 2× the limit straddling the boundary (100 requests at 11:59:59, 100 more at
+          12:00:00).</li>
+        <li><strong>Sliding window log</strong> — store a timestamp per request and count the last 60 seconds.
+          Perfectly accurate, but memory grows with traffic; storing a timestamp per request defeats the
+          purpose at scale.</li>
+        <li><strong>Sliding window counter</strong> — weight the previous window's count by overlap. Good
+          accuracy, constant memory. A solid choice.</li>
+        <li><strong>Token bucket</strong> — a bucket of N tokens refilling at a steady rate; each request
+          spends one. Constant memory, and it naturally allows short bursts while enforcing the average
+          rate — which usually matches what you actually want for an API.</li>
+      </ul>
+      <p>I default to token bucket: clients get burst tolerance, you get a steady average, and the state per
+        client is just two numbers — token count and last-refill timestamp.</p>
+
+      <h2>Where the limiter lives</h2>
+      <p>In-process middleware is fine for one server. The moment you run multiple instances behind a load
+        balancer, per-server counters mean a client's effective limit is N × servers. So state moves to a
+        shared store — Redis is the standard answer: fast, supports atomic operations, and TTLs expire idle
+        clients' state automatically. The check must be atomic (read tokens, refill, decrement, write back),
+        otherwise two concurrent requests both pass on the last token. A small Lua script executed in Redis
+        does the whole sequence as one atomic operation.</p>
+
+      <h2>The distributed-systems questions</h2>
+      <ul>
+        <li><strong>What if Redis goes down?</strong> Decide explicitly: fail open (allow traffic, lose
+          protection) or fail closed (reject traffic to protect the backend). For most public APIs I fail
+          open and alert loudly — rate limiting is protection, not a security boundary.</li>
+        <li><strong>Latency.</strong> Each request now pays a Redis round trip. Keep Redis in the same
+          network/AZ; at higher scale, batch token grants locally (each server takes tokens in chunks),
+          trading a little accuracy for a big latency win.</li>
+        <li><strong>Hot keys.</strong> One aggressive client hammering a single Redis key is rarely a problem
+          in practice, but at very large scale you shard clients across Redis nodes by key hash.</li>
+      </ul>
+
+      <h2>The API contract matters too</h2>
+      <p>Return <code>429 Too Many Requests</code> with <code>Retry-After</code>, and include
+        <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, and <code>X-RateLimit-Reset</code>
+        on every response — well-behaved clients will throttle themselves before you have to. That single
+        practice reduced our actual 429 rate more than any tuning of the algorithm did.</p>
+
+      <p>The pattern to take away: the algorithm is the easy 20%. The real design work is state placement,
+        atomicity, failure behaviour, and the client contract — and that's true of most system design
+        problems, not just this one.</p>
+    
+      <p class="post-tags"><span>System Design</span> <span>Backend</span> <span>Scalability</span></p>
+    </article>
+    <a class="back-link" href="/blog/">&larr; All posts</a>
+  </main>
+  <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>
+</body>
+</html>

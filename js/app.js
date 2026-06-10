@@ -14,6 +14,48 @@ const routes = {
 
 let navLinks, navToggler, aside, mainContent;
 
+// --- SEO: per-route document title, description, canonical ---
+
+const SITE_URL = 'https://srkonok.github.io/';
+const SITE_NAME = 'Md Shahriar Rahman';
+const DEFAULT_TITLE = document.title;
+const DEFAULT_DESCRIPTION = document
+  .querySelector('meta[name="description"]')
+  .getAttribute('content');
+
+const sectionMeta = {
+  about: ['About', 'About Md Shahriar Rahman - Software Engineer in Dhaka, Bangladesh. Skills, education, and experience in backend development, AWS cloud, and DevOps.'],
+  certification: ['Certifications', 'Professional certifications of Md Shahriar Rahman, including AWS Certified Cloud Practitioner.'],
+  certifications: ['Certifications', 'Professional certifications of Md Shahriar Rahman, including AWS Certified Cloud Practitioner.'],
+  services: ['Services', 'Services offered by Md Shahriar Rahman: backend API development, AWS cloud architecture, CI/CD pipelines, and DevOps consulting.'],
+  portfolio: ['Portfolio', 'Selected projects by Md Shahriar Rahman - ERP systems, government platforms, backend APIs, and cloud deployments.'],
+  blog: ['Blog', 'Articles on backend development, AWS cloud, DevOps, CI/CD, and system design by Md Shahriar Rahman.'],
+  contact: ['Contact', 'Get in touch with Md Shahriar Rahman for backend, cloud, and DevOps work.']
+};
+
+function updateSEO(base, slug) {
+  let title = DEFAULT_TITLE;
+  let description = DEFAULT_DESCRIPTION;
+  let canonical = SITE_URL;
+
+  if (base === 'blog' && slug) {
+    const post = blogs.find(b => b.slug === slug);
+    if (post) {
+      title = `${post.title} - ${SITE_NAME}`;
+      description = post.description;
+      canonical = `${SITE_URL}blog/${post.slug}/`;
+    }
+  } else if (sectionMeta[base]) {
+    title = `${sectionMeta[base][0]} - ${DEFAULT_TITLE}`;
+    description = sectionMeta[base][1];
+    if (base === 'blog') canonical = `${SITE_URL}blog/`;
+  }
+
+  document.title = title;
+  document.querySelector('meta[name="description"]').setAttribute('content', description);
+  document.querySelector('link[rel="canonical"]').setAttribute('href', canonical);
+}
+
 // --- Lightbox ---
 
 const lightbox = document.querySelector('.lightbox');
@@ -125,6 +167,8 @@ async function loadSection(section) {
     mainContent.innerHTML = html;
     mainContent.scrollTop = 0;
     window.scrollTo(0, 0);
+
+    updateSEO(base, slug);
 
     navLinks.forEach(link => link.classList.remove('active'));
     const activeLink = document.querySelector(`.nav a[href="#${base}"]`);
@@ -301,11 +345,11 @@ function initContactForm() {
         document.getElementById('form-success').style.display = 'block';
         btn.textContent = 'Sent!';
       } else {
-        btn.textContent = 'Error — try again';
+        btn.textContent = 'Error, try again';
         btn.disabled = false;
       }
     } catch {
-      btn.textContent = 'Error — try again';
+      btn.textContent = 'Error, try again';
       btn.disabled = false;
     }
   });
