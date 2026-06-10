@@ -42,3 +42,6 @@ body.dark .aside .nav li a.active,
 .portfolio .portfolio-filter button.active{
     border-color: #ec1839;
 }
+:root {
+    --skin-color: #ec1839;
+}

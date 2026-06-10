@@ -1415,13 +1415,14 @@ body.dark .hero-stat span { color: #aaa; }
     margin-top: 20px;
 }
 
-.btn-outline {
+/* .btn.btn-outline outranks the skin stylesheets' .btn background rule */
+.btn.btn-outline {
     background-color: transparent;
     border: 2px solid var(--skin-color);
     color: var(--skin-color);
 }
 
-.btn-outline:hover { background-color: var(--skin-color); color: #fff; }
+.btn.btn-outline:hover { background-color: var(--skin-color); color: #fff; }
 
 /* =============================================
    Skill tags (replaces progress bars)
