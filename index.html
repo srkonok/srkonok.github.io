@@ -1,14 +1,25 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 
 <head>
-  <title>Shahriar Rahman</title>
+  <title>Shahriar Rahman — Software Engineer</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Shahriar Rahman — Software Engineer, Cloud Practitioner and Full-Stack Developer based in Dhaka, Bangladesh.">
+  <meta name="author" content="Shahriar Rahman">
+  <meta property="og:title" content="Shahriar Rahman — Software Engineer">
+  <meta property="og:description" content="Software Engineer, Cloud Practitioner and Full-Stack Developer based in Dhaka, Bangladesh.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Shahriar Rahman — Software Engineer">
+  <meta name="twitter:description" content="Software Engineer, Cloud Practitioner and Full-Stack Developer based in Dhaka, Bangladesh.">
+  <link rel="canonical" href="https://srkonok.github.io/">
   <link rel="stylesheet" href="css/style.css" type="text/css">
   <link rel="icon" href="favicon.ico">
   <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css">
+    href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css"
+    integrity="sha512-zy9v3IfKDByBfikHh+BHFzEOfXPGxVRHuHDA7BkBGFp2UD7giMqLMRa7V0H1inHPmNdMKVKFoSFRSHSdVbCIw=="
+    crossorigin="anonymous">
   <link rel="stylesheet" class="alternate-style" title="pink" href="css/skins/pink.css" type="text/css">
   <link rel="stylesheet" class="alternate-style" title="blue" href="css/skins/blue.css" type="text/css" disabled>
   <link rel="stylesheet" class="alternate-style" title="green" href="css/skins/green.css" type="text/css" disabled>
@@ -27,9 +38,9 @@
   <div id="root-container"></div>
 
   <!-- Lightbox -->
-  <div class="lightbox">
+  <div class="lightbox" role="dialog" aria-modal="true" aria-label="Portfolio image viewer">
     <div class="lightbox-content">
-      <div class="lightbox-close">&times;</div>
+      <button class="lightbox-close" aria-label="Close lightbox">&times;</button>
       <img src="" alt="" class="lightbox-img">
       <div class="lightbox-caption">
         <div class="caption-text"></div>
@@ -37,28 +48,23 @@
       </div>
     </div>
     <div class="lightbox-controls">
-      <div class="prev-item"><i class="fa fa-angle-left"></i></div>
-      <div class="next-item"><i class="fa fa-angle-right"></i></div>
+      <button class="prev-item" aria-label="Previous image"><i class="fa fa-angle-left" aria-hidden="true"></i></button>
+      <button class="next-item" aria-label="Next image"><i class="fa fa-angle-right" aria-hidden="true"></i></button>
     </div>
   </div>
 
   <!-- Style Switcher -->
   <div class="style-switcher">
-    <div class="toggle-style-switcher">
-      <i class="fa fa-cog fa-spin"></i>
-    </div>
+    <button class="toggle-style-switcher" aria-label="Toggle style switcher">
+      <i class="fa fa-cog fa-spin" aria-hidden="true"></i>
+    </button>
     <h5>Style Switcher</h5>
     <ul>
-      <li><a href="javascript:void(0);" title="pink" style="background-color: #ec1839;"
-          onclick="setActiveStyle('pink')"></a></li>
-      <li><a href="javascript:void(0);" title="blue" style="background-color: #2196f3;"
-          onclick="setActiveStyle('blue')"></a></li>
-      <li><a href="javascript:void(0);" title="orange" style="background-color: #fa5b0f;"
-          onclick="setActiveStyle('orange')"></a></li>
-      <li><a href="javascript:void(0);" title="yellow" style="background-color: #ffb400;"
-          onclick="setActiveStyle('yellow')"></a></li>
-      <li><a href="javascript:void(0);" title="green" style="background-color: #72b626;"
-          onclick="setActiveStyle('green')"></a></li>
+      <li><button class="skin-color-btn" data-color="pink" title="Pink theme" style="background-color: #ec1839;"></button></li>
+      <li><button class="skin-color-btn" data-color="blue" title="Blue theme" style="background-color: #2196f3;"></button></li>
+      <li><button class="skin-color-btn" data-color="orange" title="Orange theme" style="background-color: #fa5b0f;"></button></li>
+      <li><button class="skin-color-btn" data-color="yellow" title="Yellow theme" style="background-color: #ffb400;"></button></li>
+      <li><button class="skin-color-btn" data-color="green" title="Green theme" style="background-color: #72b626;"></button></li>
     </ul>
     <h5>Body Skin</h5>
     <label><input type="radio" class="body-skin" name="body-skin" value="light" checked> Light</label>
@@ -66,13 +72,13 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/ityped.min.js"></script>
-  <script src="js/script.js"></script>
-  <script src="js/styleSwitcher.js"></script>
-  
+  <script src="js/ityped.min.js" defer></script>
+  <script src="js/script.js" defer></script>
+  <script src="js/styleSwitcher.js" defer></script>
+
   <script type="module">
     import { blogs } from './js/portfolio.js';
-  
+
     (function () {
       const routes = {
         sidebar: 'partials/sidebar.html',
@@ -84,30 +90,81 @@
         blog: 'partials/blog.html',
         contact: 'partials/contact.html'
       };
-  
+
       let navLinks, navToggler, aside, mainContent;
-  
+
+      // Lightbox state
+      const lightbox = document.querySelector('.lightbox');
+      const lightboxImg = lightbox.querySelector('.lightbox-img');
+      const lightboxText = lightbox.querySelector('.caption-text');
+      const lightboxCounter = lightbox.querySelector('.caption-counter');
+      const lightboxClose = lightbox.querySelector('.lightbox-close');
+      const prevBtn = lightbox.querySelector('.prev-item');
+      const nextBtn = lightbox.querySelector('.next-item');
+      let portfolioItems = [];
+      let itemIndex = 0;
+
+      function openLightbox(index) {
+        itemIndex = index;
+        updateLightbox();
+        lightbox.classList.add('open');
+        lightbox.focus();
+      }
+
+      function closeLightbox() {
+        lightbox.classList.remove('open');
+      }
+
+      function updateLightbox() {
+        const item = portfolioItems[itemIndex];
+        lightboxImg.src = item.querySelector('.portfolio-img img').getAttribute('src');
+        lightboxImg.alt = item.querySelector('h4').textContent;
+        lightboxText.textContent = item.querySelector('h4').textContent;
+        lightboxCounter.textContent = `${itemIndex + 1} of ${portfolioItems.length}`;
+      }
+
+      function prevItem() {
+        itemIndex = itemIndex === 0 ? portfolioItems.length - 1 : itemIndex - 1;
+        updateLightbox();
+      }
+
+      function nextItem() {
+        itemIndex = itemIndex === portfolioItems.length - 1 ? 0 : itemIndex + 1;
+        updateLightbox();
+      }
+
+      // Lightbox controls — set up once, work across section loads
+      lightboxClose.addEventListener('click', closeLightbox);
+      prevBtn.addEventListener('click', prevItem);
+      nextBtn.addEventListener('click', nextItem);
+      lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+      document.addEventListener('keydown', e => {
+        if (!lightbox.classList.contains('open')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') prevItem();
+        if (e.key === 'ArrowRight') nextItem();
+      });
+
       async function initializeApp() {
         await loadSidebar();
         setupEventListeners();
         const initialSection = window.location.hash.substring(1) || 'home';
         await loadSection(initialSection);
       }
-  
+
       async function loadSidebar() {
         try {
           const response = await fetch(routes.sidebar);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const html = await response.text();
           const rootContainer = document.getElementById('root-container');
           rootContainer.innerHTML = html;
-  
-          // Update copyright year
+
           const copyright = rootContainer.querySelector('.copyright-text');
           if (copyright) {
             copyright.innerHTML = `&copy; ${new Date().getFullYear()} Shahriar Rahman`;
           }
-  
-          // Cache elements
+
           navLinks = document.querySelectorAll('.nav a');
           navToggler = document.querySelector('.nav-toggler');
           aside = document.querySelector('.aside');
@@ -116,12 +173,10 @@
           console.error('Error loading sidebar:', error);
         }
       }
-  
+
       function setupEventListeners() {
-        // Nav toggler
         navToggler.addEventListener('click', () => aside.classList.toggle('open'));
-  
-        // Nav links
+
         navLinks.forEach(link => {
           link.addEventListener('click', e => {
             e.preventDefault();
@@ -129,109 +184,132 @@
             handleNavigation(section);
           });
         });
-  
-        // Window events
+
         window.addEventListener('popstate', handlePopState);
         window.addEventListener('resize', handleResize);
         document.addEventListener('click', handleDocumentClick);
       }
-  
+
       async function loadSection(section) {
         try {
           const response = await fetch(routes[section] || routes.home);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const html = await response.text();
           mainContent.innerHTML = html;
-  
-          // Update active navigation
+
           navLinks.forEach(link => link.classList.remove('active'));
           const activeLink = document.querySelector(`.nav a[href="#${section}"]`);
           if (activeLink) activeLink.classList.add('active');
-  
-          // Initialize section components
+
           if (section === 'portfolio') {
             initPortfolioFilter();
           } else if (section === 'blog') {
             initBlogPosts();
           } else if (section === 'home') {
-            initiTyped();
+            initTyped();
           }
         } catch (error) {
           console.error('Error loading section:', error);
         }
       }
-  
-      function initiTyped() {
-        if (typeof iTyped !== 'undefined') {
-          new iTyped('.iTyped', {
-            strings: ['Software Engineer', 'Cloud Practitioner', 'Full-Stack Developer'],
-            loop: true,
-            typeSpeed: 100,
-            backSpeed: 50,
-            backDelay: 2000
-          });
-        }
+
+      function initTyped() {
+        const el = document.querySelector('.iTyped');
+        if (!el || typeof window.ityped === 'undefined') return;
+        window.ityped.init(el, {
+          strings: ['Software Engineer', 'Cloud Practitioner', 'Full-Stack Developer'],
+          loop: true,
+          typeSpeed: 100,
+          backSpeed: 50,
+          backDelay: 2000
+        });
       }
-  
+
+      function initPortfolioFilter() {
+        const filterContainer = mainContent.querySelector('.portfolio-filter');
+        portfolioItems = Array.from(mainContent.querySelectorAll('.portfolio-item'));
+
+        if (!filterContainer || portfolioItems.length === 0) return;
+
+        const filterBtns = filterContainer.querySelectorAll('button');
+
+        filterBtns.forEach(btn => {
+          btn.addEventListener('click', function () {
+            filterContainer.querySelector('.active').classList.remove('active');
+            this.classList.add('active');
+            const filterValue = this.getAttribute('data-filter');
+            portfolioItems.forEach(item => {
+              const match = filterValue === 'all' || item.getAttribute('data-category') === filterValue;
+              item.classList.toggle('show', match);
+              item.classList.toggle('hide', !match);
+            });
+          });
+        });
+
+        portfolioItems.forEach((item, i) => {
+          item.style.cursor = 'pointer';
+          item.addEventListener('click', () => openLightbox(i));
+        });
+      }
+
       function handleNavigation(section) {
         history.pushState({ section }, '', `#${section}`);
         loadSection(section);
         if (window.innerWidth <= 1199) aside.classList.remove('open');
       }
-  
+
       function handlePopState(e) {
         const section = e.state?.section || 'home';
         loadSection(section);
       }
-  
+
       function handleResize() {
         if (window.innerWidth > 1199) aside.classList.remove('open');
       }
-  
+
       function handleDocumentClick(e) {
-        if (window.innerWidth <= 1199 && 
-            !aside.contains(e.target) && 
-            !e.target.closest('.nav-toggler')) {
+        if (window.innerWidth <= 1199 &&
+          !aside.contains(e.target) &&
+          !e.target.closest('.nav-toggler')) {
           aside.classList.remove('open');
         }
       }
-  
-      // Blog functions
+
+      function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
       function initBlogPosts() {
         const blogContainer = document.getElementById('blog-posts');
         if (!blogContainer) return;
-  
-        const filteredBlogs = blogs;
-  
-        blogContainer.innerHTML = filteredBlogs.map(blog => `
-          <div class="blog-item padd-15" data-tags="${blog.tags.map(t => t.toLowerCase()).join(' ')}">
+
+        blogContainer.innerHTML = blogs.map(blog => `
+          <div class="blog-item padd-15" data-tags="${escapeHtml(blog.tags.map(t => t.toLowerCase()).join(' '))}">
             <div class="blog-item-inner shadow-dark">
               <div class="blog-img">
-                <img src="${blog.image}" alt="${blog.title}">
-                <div class="blog-date">${blog.date}</div>
+                <img src="${escapeHtml(blog.image)}" alt="${escapeHtml(blog.title)}" loading="lazy">
+                <div class="blog-date">${escapeHtml(blog.date)}</div>
               </div>
               <div class="blog-info">
-                <h4 class="blog-title"><strong>${blog.title}</strong></h4>
-                <p class="blog-description">${blog.description}</p>
+                <h4 class="blog-title"><strong>${escapeHtml(blog.title)}</strong></h4>
+                <p class="blog-description">${escapeHtml(blog.description)}</p>
                 <p class="blog-tags">Tags: ${blog.tags.map(tag =>
-                  `<a href="#" class="tag">${tag}</a>`).join(', ')}</p>
+          `<a href="#" class="tag">${escapeHtml(tag)}</a>`).join(', ')}</p>
               </div>
             </div>
           </div>
         `).join('');
-  
+
         blogContainer.addEventListener('click', handleBlogInteractions);
       }
-  
+
       function handleBlogInteractions(e) {
         const tag = e.target.closest('.tag');
         if (tag) {
           e.preventDefault();
-          const selectedTag = tag.textContent.trim().toLowerCase();
-          initBlogPosts();
         }
       }
-  
-      // Initialize app
+
       window.addEventListener('DOMContentLoaded', initializeApp);
     })();
   </script>
