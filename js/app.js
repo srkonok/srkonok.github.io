@@ -231,9 +231,14 @@ function initPortfolioFilter() {
     });
   });
 
-  portfolioItems.forEach((item, i) => {
+  portfolioItems.forEach(item => {
+    const link = item.querySelector('.portfolio-info a');
+    if (!link) return;
     item.style.cursor = 'pointer';
-    item.addEventListener('click', () => openLightbox(i));
+    item.addEventListener('click', e => {
+      if (e.target.closest('a')) return;
+      window.open(link.href, '_blank', 'noopener');
+    });
   });
 }
 
