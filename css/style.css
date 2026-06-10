@@ -1356,6 +1356,40 @@ body.dark .contact-card h4 { color: #fff; }
     .portfolio .portfolio-filter button {
         margin-bottom: 10px;
     }
+
+    .about .about-content h3.title {
+        font-size: 18px;
+        margin-bottom: 18px;
+    }
+
+    .about .about-content .timeline {
+        padding: 18px 12px;
+    }
+
+    .about .about-content .timeline .timeline-item {
+        padding-left: 28px;
+        padding-bottom: 28px;
+    }
+
+    .about .about-content .timeline .timeline-title {
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .about .about-content .timeline .timeline-date {
+        font-size: 11px;
+        margin-bottom: 6px;
+    }
+
+    .about .about-content .timeline .timeline-text {
+        font-size: 13px;
+        line-height: 20px;
+    }
+
+    .about .about-content .timeline .circle-dot {
+        height: 11px;
+        width: 11px;
+    }
 }
 
 @media(max-width: 575px) {
