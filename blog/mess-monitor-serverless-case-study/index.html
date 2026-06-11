@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Case Study: Mess Monitor — Serverless on a Student Budget — Md Shahriar Rahman</title>
+  <meta name="description" content="How my expense-splitting app went from a fix for my own student mess to 10K+ downloads and 700+ daily users on a backend that costs almost nothing: Flutter, API Gateway, Lambda, and a single-table DynamoDB design, with the month-end settlement algorithm that ends household arguments.">
+  <meta name="author" content="Md Shahriar Rahman">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://srkonok.github.io/blog/mess-monitor-serverless-case-study/">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="Case Study: Mess Monitor — Serverless on a Student Budget — Md Shahriar Rahman">
+  <meta property="og:description" content="How my expense-splitting app went from a fix for my own student mess to 10K+ downloads and 700+ daily users on a backend that costs almost nothing: Flutter, API Gateway, Lambda, and a single-table DynamoDB design, with the month-end settlement algorithm that ends household arguments.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://srkonok.github.io/blog/mess-monitor-serverless-case-study/">
+  <meta property="og:site_name" content="Md Shahriar Rahman">
+  <meta property="og:image" content="https://srkonok.github.io/images/portfolio/messmonitor.webp">
+  <meta property="article:published_time" content="2026-05-23">
+  <meta property="article:author" content="Md Shahriar Rahman">
+  <meta property="article:tag" content="Serverless">
+  <meta property="article:tag" content="AWS">
+  <meta property="article:tag" content="Mobile">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Case Study: Mess Monitor — Serverless on a Student Budget">
+  <meta name="twitter:description" content="How my expense-splitting app went from a fix for my own student mess to 10K+ downloads and 700+ daily users on a backend that costs almost nothing: Flutter, API Gateway, Lambda, and a single-table DynamoDB design, with the month-end settlement algorithm that ends household arguments.">
+  <meta name="twitter:image" content="https://srkonok.github.io/images/portfolio/messmonitor.webp">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","headline":"Case Study: Mess Monitor — Serverless on a Student Budget","description":"How my expense-splitting app went from a fix for my own student mess to 10K+ downloads and 700+ daily users on a backend that costs almost nothing: Flutter, API Gateway, Lambda, and a single-table DynamoDB design, with the month-end settlement algorithm that ends household arguments.","image":"https://srkonok.github.io/images/portfolio/messmonitor.webp","datePublished":"2026-05-23","dateModified":"2026-05-23","keywords":"Serverless, AWS, Mobile","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/mess-monitor-serverless-case-study/"},"speakable":{"@type":"SpeakableSpecification","cssSelector":["article h1","article > p:first-of-type"]}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What architecture does Mess Monitor use?","acceptedAnswer":{"@type":"Answer","text":"A Flutter app talking to a fully serverless AWS backend: API Gateway in front of Node.js Lambda functions with DynamoDB for storage. Nothing runs when nobody is using it, so cost scales from zero and there is no server to maintain."}},{"@type":"Question","name":"How is the DynamoDB single-table design structured?","acceptedAnswer":{"@type":"Answer","text":"One table partitioned by mess (household) ID, with typed sort-key prefixes for members, meals, and expenses (like MEAL#date#member). A month's dashboard is a single partition query with a sort-key range, and running totals are kept with atomic counter updates on write."}},{"@type":"Question","name":"How much does it cost to run a serverless app with 700+ daily users?","acceptedAnswer":{"@type":"Answer","text":"Almost nothing for this workload: Lambda invocations and on-demand DynamoDB capacity for meal logging sit largely within the AWS free tier. The smallest always-on server would cost more per month than this backend does per year."}}]}]}</script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
+  <style>
+  :root { --skin: #2196f3; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
+         color: #302e4d; background: #f2f2fc; }
+  .site-header { background: #fdf9ff; border-bottom: 1px solid #e8dfec; padding: 18px 20px; }
+  .site-header .wrap { max-width: 760px; margin: auto; display: flex;
+                       justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .site-header a.brand { font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 22px;
+                         color: #302e4d; text-decoration: none; }
+  .site-header a.brand span { color: var(--skin); }
+  .site-header nav a { color: #504e70; text-decoration: none; font-weight: 600;
+                       font-size: 15px; margin-left: 18px; }
+  .site-header nav a:hover { color: var(--skin); }
+  main { max-width: 760px; margin: auto; padding: 50px 20px 70px; }
+  h1 { font-family: 'Rubik', sans-serif; font-size: 34px; line-height: 1.25; margin-bottom: 12px; }
+  .post-meta { color: #7c7a93; font-size: 15px; margin-bottom: 35px; }
+  article h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin: 35px 0 14px; }
+  article p { margin-bottom: 16px; color: #504e70; }
+  article ul, article ol { margin: 0 0 16px 22px; color: #504e70; }
+  article li { margin-bottom: 8px; }
+  article strong { color: #302e4d; }
+  article a { color: var(--skin); }
+  article code { background: #e8e6f5; padding: 2px 6px; border-radius: 4px;
+                 font-size: 0.9em; color: #302e4d; }
+  article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
+                overflow-x: auto; margin-bottom: 16px; }
+  article pre code { background: none; color: inherit; padding: 0; }
+  .faq { margin-top: 45px; border-top: 1px solid #e8dfec; padding-top: 30px; }
+  .faq h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin-bottom: 18px; }
+  .faq details { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 8px;
+                 padding: 14px 18px; margin-bottom: 12px; }
+  .faq summary { font-weight: 600; cursor: pointer; color: #302e4d; }
+  .faq details p { margin: 12px 0 0; color: #504e70; }
+  .post-tags { margin-top: 35px; }
+  .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
+                    font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
+  .back-link { display: inline-block; margin-top: 35px; color: var(--skin);
+               text-decoration: none; font-weight: 600; }
+  .post-list { list-style: none; }
+  .post-list li { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 10px;
+                  padding: 24px; margin-bottom: 20px; }
+  .post-list h2 { font-family: 'Rubik', sans-serif; font-size: 22px; margin-bottom: 8px; }
+  .post-list h2 a { color: #302e4d; text-decoration: none; }
+  .post-list h2 a:hover { color: var(--skin); }
+  .post-list .date { color: #7c7a93; font-size: 14px; margin-bottom: 10px; }
+  .post-list p { color: #504e70; font-size: 15px; }
+  footer { text-align: center; padding: 25px 20px 45px; color: #7c7a93; font-size: 14px; }
+  footer a { color: var(--skin); text-decoration: none; }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/">Shahriar<span>.</span></a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/blog/">Blog</a>
+        <a href="/#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <article>
+
+      <header class="blog-post-header">
+        <h1>Case Study: Mess Monitor — Serverless on a Student Budget</h1>
+        <p class="post-meta">23 May 2026 &middot; Serverless &middot; AWS &middot; Mobile</p>
+      </header>
+
+      <p>Mess Monitor started as a fix for my own shared student mess: splitting meal and grocery costs
+        always ended in arguments and a messy spreadsheet. Today it has 10K+ downloads on Google Play,
+        700+ daily active users, a 4.7★ rating — and a backend that costs almost nothing to run. It also
+        won the bdapps National Hackathon in 2022. This case study covers the architecture and the
+        decisions that let one engineer build, ship, and keep operating a consumer app alone.</p>
+
+      <h2>The constraint that chose the architecture</h2>
+      <p>I was a student. There was no budget for an always-on server, and no time for patching one. That
+        constraint made the decision: <strong>Flutter</strong> on the client (one codebase, Android first),
+        and a fully serverless backend — <strong>API Gateway → Lambda (Node.js) → DynamoDB</strong>.
+        Nothing runs when nobody is using it; cost scales from zero, and there is no server to babysit
+        during exam week.</p>
+
+      <h2>The domain, in one sentence</h2>
+      <p>A <em>mess</em> (shared household) has members; members log meals and grocery expenses through the
+        month; at month-end everyone needs one number — who owes whom how much. Reads and writes are almost
+        always scoped to a single mess, which maps perfectly onto DynamoDB's partition model.</p>
+
+      <h2>Single-table DynamoDB design</h2>
+      <p>The whole application lives in one table, partitioned by mess:</p>
+      <ul>
+        <li><strong>Partition key:</strong> the mess ID. <strong>Sort key:</strong> a typed prefix —
+          <code>MEMBER#&lt;id&gt;</code>, <code>MEAL#&lt;date&gt;#&lt;member&gt;</code>,
+          <code>EXPENSE#&lt;date&gt;#&lt;id&gt;</code>.</li>
+        <li>The month's dashboard is a single query: one partition, sort-key range on the date prefix.
+          No joins, no scatter — single-digit milliseconds regardless of how many messes exist.</li>
+        <li>Running totals (meal counts, expense sum per member) are maintained with atomic counter updates
+          on write, so the home screen never recomputes the month from raw items.</li>
+      </ul>
+      <p>The trade-off is the usual one: queries you didn't design keys for are painful. That's the
+        discipline single-table design demands — model the access patterns first, then the data.</p>
+
+      <h2>The settlement algorithm</h2>
+      <p>Month-end settlement computes each member's meal rate share (total grocery spend ÷ total meals ×
+        member's meals) against what they actually paid, then reduces the debt graph to a minimal set of
+        transfers — so five housemates get three payment instructions, not ten. It runs in a Lambda on
+        demand; the result is stored back as a settlement item so history survives membership changes.</p>
+
+      <h2>Living with cold starts</h2>
+      <p>Lambda cold starts are real but manageable at this scale: handlers are small, dependencies pruned,
+        and connection setup is reused across warm invocations. DynamoDB needs no connection pool — one of
+        the quiet reasons it pairs better with Lambda than a relational database does for an app like this.
+        The p95 the user feels is dominated by mobile network latency, not the backend.</p>
+
+      <h2>What it costs</h2>
+      <p>With 700+ daily actives, the backend sits almost entirely inside the AWS free tier: Lambda
+        invocations and DynamoDB on-demand capacity for a meal-logging workload are tiny. The practical
+        bill is effectively the price of a coffee — which is the whole reason the app could survive its
+        student-project phase and keep running. The same workload on the smallest always-on EC2 instance
+        would have cost more every single month than this does in a year.</p>
+
+      <h2>What 10K+ downloads taught me</h2>
+      <ul>
+        <li><strong>Boring reliability beats features.</strong> The app does one job; the 4.7★ rating comes
+          from it never losing a month's data, not from feature count.</li>
+        <li><strong>Serverless is a superpower for solo builders</strong> — but only if the data model fits.
+          Mess Monitor's single-partition access pattern is the ideal case; force-fitting a relational
+          domain onto DynamoDB would have produced the opposite experience.</li>
+        <li><strong>Operating software is the real test.</strong> Anyone can launch; the architecture
+          decisions above are why one person can also keep it running for years, through hundreds of
+          households' daily arguments — now settled by the app.</li>
+      </ul>
+    
+      <p class="post-tags"><span>Serverless</span> <span>AWS</span> <span>Mobile</span></p>
+    </article>
+    <section class="faq" aria-label="Frequently asked questions">
+      <h2>Frequently asked questions</h2>
+      <details open>
+        <summary>What architecture does Mess Monitor use?</summary>
+        <p>A Flutter app talking to a fully serverless AWS backend: API Gateway in front of Node.js Lambda functions with DynamoDB for storage. Nothing runs when nobody is using it, so cost scales from zero and there is no server to maintain.</p>
+      </details>
+      <details open>
+        <summary>How is the DynamoDB single-table design structured?</summary>
+        <p>One table partitioned by mess (household) ID, with typed sort-key prefixes for members, meals, and expenses (like MEAL#date#member). A month's dashboard is a single partition query with a sort-key range, and running totals are kept with atomic counter updates on write.</p>
+      </details>
+      <details open>
+        <summary>How much does it cost to run a serverless app with 700+ daily users?</summary>
+        <p>Almost nothing for this workload: Lambda invocations and on-demand DynamoDB capacity for meal logging sit largely within the AWS free tier. The smallest always-on server would cost more per month than this backend does per year.</p>
+      </details>
+    </section>
+    <a class="back-link" href="/blog/">&larr; All posts</a>
+  </main>
+  <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>
+</body>
+</html>

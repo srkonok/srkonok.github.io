@@ -198,4 +198,50 @@ export const blogs = [
       },
     ],
   },
+  {
+    slug: "honeybee-erp-modular-architecture-case-study",
+    image: "images/portfolio/honeybeeERP.webp",
+    date: "18 Apr 2026",
+    title: "Case Study: The Architecture Behind HoneyBee ERP",
+    description:
+      "A deep dive into the modular ERP platform I build at HoneyBee IoT: why a modular monolith beats microservices for ERP, module boundaries with a shared kernel, scope-aware RBAC, real-time updates over WebSockets with Redis pub/sub, and the caching layers that keep reports fast.",
+    tags: ["ERP", "NestJS", "Architecture"],
+    faqs: [
+      {
+        q: "Should an ERP system use microservices?",
+        a: "Usually not. ERP modules are deeply relational (payroll reads attendance, inventory posts to accounting), so splitting them into services turns every business transaction into a distributed transaction. A modular monolith with hard internal boundaries gives the maintainability benefits without the distributed-systems tax, and leaves extraction open for later.",
+      },
+      {
+        q: "How do you design RBAC for an ERP?",
+        a: "Three layers: atomic per-module permissions (like payroll.run.execute), roles as configurable bundles of permissions, and scopes that bind a role to an organisational slice such as a branch or department. Every API route declares its required permission and a guard checks the user's effective permissions from a Redis cache.",
+      },
+      {
+        q: "How does HoneyBee ERP deliver real-time updates?",
+        a: "Modules emit domain events to Redis pub/sub, and a stateless WebSocket gateway fans them out to subscribed clients, filtered by the same RBAC rules. Using Redis pub/sub instead of direct emits means any gateway instance can serve any client, keeping scaling and zero-downtime deploys simple.",
+      },
+    ],
+  },
+  {
+    slug: "mess-monitor-serverless-case-study",
+    image: "images/portfolio/messmonitor.webp",
+    date: "23 May 2026",
+    title: "Case Study: Mess Monitor — Serverless on a Student Budget",
+    description:
+      "How my expense-splitting app went from a fix for my own student mess to 10K+ downloads and 700+ daily users on a backend that costs almost nothing: Flutter, API Gateway, Lambda, and a single-table DynamoDB design, with the month-end settlement algorithm that ends household arguments.",
+    tags: ["Serverless", "AWS", "Mobile"],
+    faqs: [
+      {
+        q: "What architecture does Mess Monitor use?",
+        a: "A Flutter app talking to a fully serverless AWS backend: API Gateway in front of Node.js Lambda functions with DynamoDB for storage. Nothing runs when nobody is using it, so cost scales from zero and there is no server to maintain.",
+      },
+      {
+        q: "How is the DynamoDB single-table design structured?",
+        a: "One table partitioned by mess (household) ID, with typed sort-key prefixes for members, meals, and expenses (like MEAL#date#member). A month's dashboard is a single partition query with a sort-key range, and running totals are kept with atomic counter updates on write.",
+      },
+      {
+        q: "How much does it cost to run a serverless app with 700+ daily users?",
+        a: "Almost nothing for this workload: Lambda invocations and on-demand DynamoDB capacity for meal logging sit largely within the AWS free tier. The smallest always-on server would cost more per month than this backend does per year.",
+      },
+    ],
+  },
 ];

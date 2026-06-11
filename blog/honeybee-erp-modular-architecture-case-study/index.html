@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Case Study: The Architecture Behind HoneyBee ERP — Md Shahriar Rahman</title>
+  <meta name="description" content="A deep dive into the modular ERP platform I build at HoneyBee IoT: why a modular monolith beats microservices for ERP, module boundaries with a shared kernel, scope-aware RBAC, real-time updates over WebSockets with Redis pub/sub, and the caching layers that keep reports fast.">
+  <meta name="author" content="Md Shahriar Rahman">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://srkonok.github.io/blog/honeybee-erp-modular-architecture-case-study/">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="Case Study: The Architecture Behind HoneyBee ERP — Md Shahriar Rahman">
+  <meta property="og:description" content="A deep dive into the modular ERP platform I build at HoneyBee IoT: why a modular monolith beats microservices for ERP, module boundaries with a shared kernel, scope-aware RBAC, real-time updates over WebSockets with Redis pub/sub, and the caching layers that keep reports fast.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://srkonok.github.io/blog/honeybee-erp-modular-architecture-case-study/">
+  <meta property="og:site_name" content="Md Shahriar Rahman">
+  <meta property="og:image" content="https://srkonok.github.io/images/portfolio/honeybeeERP.webp">
+  <meta property="article:published_time" content="2026-04-18">
+  <meta property="article:author" content="Md Shahriar Rahman">
+  <meta property="article:tag" content="ERP">
+  <meta property="article:tag" content="NestJS">
+  <meta property="article:tag" content="Architecture">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Case Study: The Architecture Behind HoneyBee ERP">
+  <meta name="twitter:description" content="A deep dive into the modular ERP platform I build at HoneyBee IoT: why a modular monolith beats microservices for ERP, module boundaries with a shared kernel, scope-aware RBAC, real-time updates over WebSockets with Redis pub/sub, and the caching layers that keep reports fast.">
+  <meta name="twitter:image" content="https://srkonok.github.io/images/portfolio/honeybeeERP.webp">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","headline":"Case Study: The Architecture Behind HoneyBee ERP","description":"A deep dive into the modular ERP platform I build at HoneyBee IoT: why a modular monolith beats microservices for ERP, module boundaries with a shared kernel, scope-aware RBAC, real-time updates over WebSockets with Redis pub/sub, and the caching layers that keep reports fast.","image":"https://srkonok.github.io/images/portfolio/honeybeeERP.webp","datePublished":"2026-04-18","dateModified":"2026-04-18","keywords":"ERP, NestJS, Architecture","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/honeybee-erp-modular-architecture-case-study/"},"speakable":{"@type":"SpeakableSpecification","cssSelector":["article h1","article > p:first-of-type"]}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Should an ERP system use microservices?","acceptedAnswer":{"@type":"Answer","text":"Usually not. ERP modules are deeply relational (payroll reads attendance, inventory posts to accounting), so splitting them into services turns every business transaction into a distributed transaction. A modular monolith with hard internal boundaries gives the maintainability benefits without the distributed-systems tax, and leaves extraction open for later."}},{"@type":"Question","name":"How do you design RBAC for an ERP?","acceptedAnswer":{"@type":"Answer","text":"Three layers: atomic per-module permissions (like payroll.run.execute), roles as configurable bundles of permissions, and scopes that bind a role to an organisational slice such as a branch or department. Every API route declares its required permission and a guard checks the user's effective permissions from a Redis cache."}},{"@type":"Question","name":"How does HoneyBee ERP deliver real-time updates?","acceptedAnswer":{"@type":"Answer","text":"Modules emit domain events to Redis pub/sub, and a stateless WebSocket gateway fans them out to subscribed clients, filtered by the same RBAC rules. Using Redis pub/sub instead of direct emits means any gateway instance can serve any client, keeping scaling and zero-downtime deploys simple."}}]}]}</script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
+  <style>
+  :root { --skin: #2196f3; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
+         color: #302e4d; background: #f2f2fc; }
+  .site-header { background: #fdf9ff; border-bottom: 1px solid #e8dfec; padding: 18px 20px; }
+  .site-header .wrap { max-width: 760px; margin: auto; display: flex;
+                       justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  .site-header a.brand { font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 22px;
+                         color: #302e4d; text-decoration: none; }
+  .site-header a.brand span { color: var(--skin); }
+  .site-header nav a { color: #504e70; text-decoration: none; font-weight: 600;
+                       font-size: 15px; margin-left: 18px; }
+  .site-header nav a:hover { color: var(--skin); }
+  main { max-width: 760px; margin: auto; padding: 50px 20px 70px; }
+  h1 { font-family: 'Rubik', sans-serif; font-size: 34px; line-height: 1.25; margin-bottom: 12px; }
+  .post-meta { color: #7c7a93; font-size: 15px; margin-bottom: 35px; }
+  article h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin: 35px 0 14px; }
+  article p { margin-bottom: 16px; color: #504e70; }
+  article ul, article ol { margin: 0 0 16px 22px; color: #504e70; }
+  article li { margin-bottom: 8px; }
+  article strong { color: #302e4d; }
+  article a { color: var(--skin); }
+  article code { background: #e8e6f5; padding: 2px 6px; border-radius: 4px;
+                 font-size: 0.9em; color: #302e4d; }
+  article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
+                overflow-x: auto; margin-bottom: 16px; }
+  article pre code { background: none; color: inherit; padding: 0; }
+  .faq { margin-top: 45px; border-top: 1px solid #e8dfec; padding-top: 30px; }
+  .faq h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin-bottom: 18px; }
+  .faq details { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 8px;
+                 padding: 14px 18px; margin-bottom: 12px; }
+  .faq summary { font-weight: 600; cursor: pointer; color: #302e4d; }
+  .faq details p { margin: 12px 0 0; color: #504e70; }
+  .post-tags { margin-top: 35px; }
+  .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
+                    font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
+  .back-link { display: inline-block; margin-top: 35px; color: var(--skin);
+               text-decoration: none; font-weight: 600; }
+  .post-list { list-style: none; }
+  .post-list li { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 10px;
+                  padding: 24px; margin-bottom: 20px; }
+  .post-list h2 { font-family: 'Rubik', sans-serif; font-size: 22px; margin-bottom: 8px; }
+  .post-list h2 a { color: #302e4d; text-decoration: none; }
+  .post-list h2 a:hover { color: var(--skin); }
+  .post-list .date { color: #7c7a93; font-size: 14px; margin-bottom: 10px; }
+  .post-list p { color: #504e70; font-size: 15px; }
+  footer { text-align: center; padding: 25px 20px 45px; color: #7c7a93; font-size: 14px; }
+  footer a { color: var(--skin); text-decoration: none; }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="/">Shahriar<span>.</span></a>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/blog/">Blog</a>
+        <a href="/#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <article>
+
+      <header class="blog-post-header">
+        <h1>Case Study: The Architecture Behind HoneyBee ERP</h1>
+        <p class="post-meta">18 Apr 2026 &middot; ERP &middot; NestJS &middot; Architecture</p>
+      </header>
+
+      <p>HoneyBee ERP is a modular enterprise platform covering HR, inventory, payroll, and core business
+        workflows — 10+ modules, real-time updates, and role-based access for every kind of user from
+        warehouse staff to finance managers. I own its backend end to end at HoneyBee IoT. This case study
+        covers the architectural decisions that shape it: why it's a modular monolith and not microservices,
+        how the module boundaries and RBAC work, and how real-time events and caching keep it fast.</p>
+
+      <h2>Why a modular monolith, not microservices</h2>
+      <p>ERP is the textbook case <em>against</em> microservices for a small team. The modules are deeply
+        relational: payroll reads attendance, attendance reads HR, inventory movements post to accounting.
+        Split those into services and every business transaction becomes a distributed transaction.
+        Instead, the platform is one deployable with hard internal boundaries:</p>
+      <ul>
+        <li><strong>One module, one directory, one public API.</strong> Each module (HR, payroll, inventory,
+          and so on) exposes an explicit service interface; other modules call that interface, never each
+          other's repositories or tables directly.</li>
+        <li><strong>A shared kernel</strong> owns the things every module needs: authentication, RBAC,
+          audit logging, notifications, and file storage. Modules depend on the kernel; the kernel depends
+          on no module.</li>
+        <li><strong>One MySQL database, schema-per-concern discipline.</strong> Cross-module reads go
+          through module APIs, which keeps the option open to extract a genuinely hot module into its own
+          service later — without paying the distributed-systems tax today.</li>
+      </ul>
+
+      <h2>Two stacks, one contract</h2>
+      <p>The platform runs NestJS (TypeScript) alongside Symfony (PHP) — a historical reality rather than a
+        design goal, and a common one in ERP systems that evolve over years. The rule that keeps it sane:
+        the stacks talk only through versioned REST contracts and shared MySQL is treated as owned by
+        exactly one side per table. New modules are built in NestJS; the Symfony side keeps serving mature
+        modules that have no business reason to be rewritten. A rewrite-everything project would have parked
+        feature delivery for months and delivered the same product.</p>
+
+      <h2>RBAC that survives real organisations</h2>
+      <p>ERP access control fails when it's modelled as a flat role list. Real companies need "HR officer for
+        branch A who can approve leave but only view payroll." The model that handles this:</p>
+      <ul>
+        <li><strong>Permissions</strong> are atomic, per-module actions (<code>payroll.run.execute</code>,
+          <code>leave.request.approve</code>).</li>
+        <li><strong>Roles</strong> are named bundles of permissions, maintained per deployment, not
+          hardcoded.</li>
+        <li><strong>Scopes</strong> bind a role to an organisational slice — a branch, department, or legal
+          entity — so the same role can be granted narrowly or globally.</li>
+      </ul>
+      <p>Every API route declares the permission it requires; a NestJS guard resolves the user's effective
+        permissions (cached in Redis, invalidated on role change) and the check costs microseconds instead
+        of a database round trip per request.</p>
+
+      <h2>Real-time without polling</h2>
+      <p>Approvals, stock movements, and attendance events need to show up on screens immediately — managers
+        sit on dashboards all day. The flow: a module emits a domain event, the event lands on Redis pub/sub,
+        and a WebSocket gateway fans it out to connected clients subscribed to the relevant channels
+        (scoped by the same RBAC rules, so users only receive events they're allowed to see). Redis pub/sub
+        rather than direct emit means WebSocket gateways stay stateless: any instance can serve any client,
+        which keeps horizontal scaling and zero-downtime deploys trivial.</p>
+
+      <h2>Caching: reports are the hot path</h2>
+      <p>ERP read traffic is dominated by dashboards and reports that aggregate thousands of rows. Three
+        layers keep MySQL calm:</p>
+      <ul>
+        <li><strong>Lookup caches</strong> (departments, item categories, role maps) — Redis cache-aside
+          with explicit invalidation on write, since they change rarely but are read on almost every request.</li>
+        <li><strong>Report caches</strong> keyed by filter parameters with short TTLs — dashboards tolerate
+          a minute of staleness; payroll calculations do not, and skip the cache entirely.</li>
+        <li><strong>Query discipline</strong> — slow-query log reviewed routinely; the fix is usually an
+          index or a rewritten aggregate, not more cache.</li>
+      </ul>
+
+      <h2>Shipping it</h2>
+      <p>Everything runs in Docker with CI/CD on every merge: build, test, migrate, and roll out with
+        health-checked container swaps so deploys are zero-downtime. Database migrations are
+        forward-only and expand-contract (add the new column, backfill, switch readers, drop the old one
+        later) — in an ERP, "we'll just take downtime for the migration" is never an acceptable answer,
+        because someone is always running payroll.</p>
+
+      <h2>What I'd tell anyone building an ERP</h2>
+      <p>Resist distribution until a module's load forces it. Spend your complexity budget on the things ERP
+        actually lives or dies by: airtight RBAC, an audit trail for everything, and reports that come back
+        fast. The architecture above isn't novel — that's the point. Novelty is risk, and this system runs
+        businesses.</p>
+    
+      <p class="post-tags"><span>ERP</span> <span>NestJS</span> <span>Architecture</span></p>
+    </article>
+    <section class="faq" aria-label="Frequently asked questions">
+      <h2>Frequently asked questions</h2>
+      <details open>
+        <summary>Should an ERP system use microservices?</summary>
+        <p>Usually not. ERP modules are deeply relational (payroll reads attendance, inventory posts to accounting), so splitting them into services turns every business transaction into a distributed transaction. A modular monolith with hard internal boundaries gives the maintainability benefits without the distributed-systems tax, and leaves extraction open for later.</p>
+      </details>
+      <details open>
+        <summary>How do you design RBAC for an ERP?</summary>
+        <p>Three layers: atomic per-module permissions (like payroll.run.execute), roles as configurable bundles of permissions, and scopes that bind a role to an organisational slice such as a branch or department. Every API route declares its required permission and a guard checks the user's effective permissions from a Redis cache.</p>
+      </details>
+      <details open>
+        <summary>How does HoneyBee ERP deliver real-time updates?</summary>
+        <p>Modules emit domain events to Redis pub/sub, and a stateless WebSocket gateway fans them out to subscribed clients, filtered by the same RBAC rules. Using Redis pub/sub instead of direct emits means any gateway instance can serve any client, keeping scaling and zero-downtime deploys simple.</p>
+      </details>
+    </section>
+    <a class="back-link" href="/blog/">&larr; All posts</a>
+  </main>
+  <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>
+</body>
+</html>

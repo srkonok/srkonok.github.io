@@ -1,0 +1,76 @@
+<!-- Blog Post: Mess Monitor Case Study -->
+<section class="blog-post section" id="blog-post">
+  <div class="container">
+    <a href="#" class="blog-back" data-nav-section="blog"><i class="fa fa-angle-left" aria-hidden="true"></i> All Posts</a>
+    <article>
+      <header class="blog-post-header">
+        <h1>Case Study: Mess Monitor — Serverless on a Student Budget</h1>
+        <p class="blog-post-meta">Serverless &middot; AWS &middot; Mobile</p>
+      </header>
+
+      <p>Mess Monitor started as a fix for my own shared student mess: splitting meal and grocery costs
+        always ended in arguments and a messy spreadsheet. Today it has 10K+ downloads on Google Play,
+        700+ daily active users, a 4.7★ rating — and a backend that costs almost nothing to run. It also
+        won the bdapps National Hackathon in 2022. This case study covers the architecture and the
+        decisions that let one engineer build, ship, and keep operating a consumer app alone.</p>
+
+      <h2>The constraint that chose the architecture</h2>
+      <p>I was a student. There was no budget for an always-on server, and no time for patching one. That
+        constraint made the decision: <strong>Flutter</strong> on the client (one codebase, Android first),
+        and a fully serverless backend — <strong>API Gateway → Lambda (Node.js) → DynamoDB</strong>.
+        Nothing runs when nobody is using it; cost scales from zero, and there is no server to babysit
+        during exam week.</p>
+
+      <h2>The domain, in one sentence</h2>
+      <p>A <em>mess</em> (shared household) has members; members log meals and grocery expenses through the
+        month; at month-end everyone needs one number — who owes whom how much. Reads and writes are almost
+        always scoped to a single mess, which maps perfectly onto DynamoDB's partition model.</p>
+
+      <h2>Single-table DynamoDB design</h2>
+      <p>The whole application lives in one table, partitioned by mess:</p>
+      <ul>
+        <li><strong>Partition key:</strong> the mess ID. <strong>Sort key:</strong> a typed prefix —
+          <code>MEMBER#&lt;id&gt;</code>, <code>MEAL#&lt;date&gt;#&lt;member&gt;</code>,
+          <code>EXPENSE#&lt;date&gt;#&lt;id&gt;</code>.</li>
+        <li>The month's dashboard is a single query: one partition, sort-key range on the date prefix.
+          No joins, no scatter — single-digit milliseconds regardless of how many messes exist.</li>
+        <li>Running totals (meal counts, expense sum per member) are maintained with atomic counter updates
+          on write, so the home screen never recomputes the month from raw items.</li>
+      </ul>
+      <p>The trade-off is the usual one: queries you didn't design keys for are painful. That's the
+        discipline single-table design demands — model the access patterns first, then the data.</p>
+
+      <h2>The settlement algorithm</h2>
+      <p>Month-end settlement computes each member's meal rate share (total grocery spend ÷ total meals ×
+        member's meals) against what they actually paid, then reduces the debt graph to a minimal set of
+        transfers — so five housemates get three payment instructions, not ten. It runs in a Lambda on
+        demand; the result is stored back as a settlement item so history survives membership changes.</p>
+
+      <h2>Living with cold starts</h2>
+      <p>Lambda cold starts are real but manageable at this scale: handlers are small, dependencies pruned,
+        and connection setup is reused across warm invocations. DynamoDB needs no connection pool — one of
+        the quiet reasons it pairs better with Lambda than a relational database does for an app like this.
+        The p95 the user feels is dominated by mobile network latency, not the backend.</p>
+
+      <h2>What it costs</h2>
+      <p>With 700+ daily actives, the backend sits almost entirely inside the AWS free tier: Lambda
+        invocations and DynamoDB on-demand capacity for a meal-logging workload are tiny. The practical
+        bill is effectively the price of a coffee — which is the whole reason the app could survive its
+        student-project phase and keep running. The same workload on the smallest always-on EC2 instance
+        would have cost more every single month than this does in a year.</p>
+
+      <h2>What 10K+ downloads taught me</h2>
+      <ul>
+        <li><strong>Boring reliability beats features.</strong> The app does one job; the 4.7★ rating comes
+          from it never losing a month's data, not from feature count.</li>
+        <li><strong>Serverless is a superpower for solo builders</strong> — but only if the data model fits.
+          Mess Monitor's single-partition access pattern is the ideal case; force-fitting a relational
+          domain onto DynamoDB would have produced the opposite experience.</li>
+        <li><strong>Operating software is the real test.</strong> Anyone can launch; the architecture
+          decisions above are why one person can also keep it running for years, through hundreds of
+          households' daily arguments — now settled by the app.</li>
+      </ul>
+    </article>
+  </div>
+</section>
+<!-- Blog Post End -->

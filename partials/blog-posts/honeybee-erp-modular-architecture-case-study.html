@@ -1,0 +1,92 @@
+<!-- Blog Post: HoneyBee ERP Case Study -->
+<section class="blog-post section" id="blog-post">
+  <div class="container">
+    <a href="#" class="blog-back" data-nav-section="blog"><i class="fa fa-angle-left" aria-hidden="true"></i> All Posts</a>
+    <article>
+      <header class="blog-post-header">
+        <h1>Case Study: The Architecture Behind HoneyBee ERP</h1>
+        <p class="blog-post-meta">ERP &middot; NestJS &middot; Architecture</p>
+      </header>
+
+      <p>HoneyBee ERP is a modular enterprise platform covering HR, inventory, payroll, and core business
+        workflows — 10+ modules, real-time updates, and role-based access for every kind of user from
+        warehouse staff to finance managers. I own its backend end to end at HoneyBee IoT. This case study
+        covers the architectural decisions that shape it: why it's a modular monolith and not microservices,
+        how the module boundaries and RBAC work, and how real-time events and caching keep it fast.</p>
+
+      <h2>Why a modular monolith, not microservices</h2>
+      <p>ERP is the textbook case <em>against</em> microservices for a small team. The modules are deeply
+        relational: payroll reads attendance, attendance reads HR, inventory movements post to accounting.
+        Split those into services and every business transaction becomes a distributed transaction.
+        Instead, the platform is one deployable with hard internal boundaries:</p>
+      <ul>
+        <li><strong>One module, one directory, one public API.</strong> Each module (HR, payroll, inventory,
+          and so on) exposes an explicit service interface; other modules call that interface, never each
+          other's repositories or tables directly.</li>
+        <li><strong>A shared kernel</strong> owns the things every module needs: authentication, RBAC,
+          audit logging, notifications, and file storage. Modules depend on the kernel; the kernel depends
+          on no module.</li>
+        <li><strong>One MySQL database, schema-per-concern discipline.</strong> Cross-module reads go
+          through module APIs, which keeps the option open to extract a genuinely hot module into its own
+          service later — without paying the distributed-systems tax today.</li>
+      </ul>
+
+      <h2>Two stacks, one contract</h2>
+      <p>The platform runs NestJS (TypeScript) alongside Symfony (PHP) — a historical reality rather than a
+        design goal, and a common one in ERP systems that evolve over years. The rule that keeps it sane:
+        the stacks talk only through versioned REST contracts and shared MySQL is treated as owned by
+        exactly one side per table. New modules are built in NestJS; the Symfony side keeps serving mature
+        modules that have no business reason to be rewritten. A rewrite-everything project would have parked
+        feature delivery for months and delivered the same product.</p>
+
+      <h2>RBAC that survives real organisations</h2>
+      <p>ERP access control fails when it's modelled as a flat role list. Real companies need "HR officer for
+        branch A who can approve leave but only view payroll." The model that handles this:</p>
+      <ul>
+        <li><strong>Permissions</strong> are atomic, per-module actions (<code>payroll.run.execute</code>,
+          <code>leave.request.approve</code>).</li>
+        <li><strong>Roles</strong> are named bundles of permissions, maintained per deployment, not
+          hardcoded.</li>
+        <li><strong>Scopes</strong> bind a role to an organisational slice — a branch, department, or legal
+          entity — so the same role can be granted narrowly or globally.</li>
+      </ul>
+      <p>Every API route declares the permission it requires; a NestJS guard resolves the user's effective
+        permissions (cached in Redis, invalidated on role change) and the check costs microseconds instead
+        of a database round trip per request.</p>
+
+      <h2>Real-time without polling</h2>
+      <p>Approvals, stock movements, and attendance events need to show up on screens immediately — managers
+        sit on dashboards all day. The flow: a module emits a domain event, the event lands on Redis pub/sub,
+        and a WebSocket gateway fans it out to connected clients subscribed to the relevant channels
+        (scoped by the same RBAC rules, so users only receive events they're allowed to see). Redis pub/sub
+        rather than direct emit means WebSocket gateways stay stateless: any instance can serve any client,
+        which keeps horizontal scaling and zero-downtime deploys trivial.</p>
+
+      <h2>Caching: reports are the hot path</h2>
+      <p>ERP read traffic is dominated by dashboards and reports that aggregate thousands of rows. Three
+        layers keep MySQL calm:</p>
+      <ul>
+        <li><strong>Lookup caches</strong> (departments, item categories, role maps) — Redis cache-aside
+          with explicit invalidation on write, since they change rarely but are read on almost every request.</li>
+        <li><strong>Report caches</strong> keyed by filter parameters with short TTLs — dashboards tolerate
+          a minute of staleness; payroll calculations do not, and skip the cache entirely.</li>
+        <li><strong>Query discipline</strong> — slow-query log reviewed routinely; the fix is usually an
+          index or a rewritten aggregate, not more cache.</li>
+      </ul>
+
+      <h2>Shipping it</h2>
+      <p>Everything runs in Docker with CI/CD on every merge: build, test, migrate, and roll out with
+        health-checked container swaps so deploys are zero-downtime. Database migrations are
+        forward-only and expand-contract (add the new column, backfill, switch readers, drop the old one
+        later) — in an ERP, "we'll just take downtime for the migration" is never an acceptable answer,
+        because someone is always running payroll.</p>
+
+      <h2>What I'd tell anyone building an ERP</h2>
+      <p>Resist distribution until a module's load forces it. Spend your complexity budget on the things ERP
+        actually lives or dies by: airtight RBAC, an audit trail for everything, and reports that come back
+        fast. The architecture above isn't novel — that's the point. Novelty is risk, and this system runs
+        businesses.</p>
+    </article>
+  </div>
+</section>
+<!-- Blog Post End -->

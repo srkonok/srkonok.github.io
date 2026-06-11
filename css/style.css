@@ -1888,6 +1888,21 @@ body.dark .portfolio-stats { border-color: #393939; }
     color: #888;
 }
 
+.portfolio-case-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--skin-color);
+    text-decoration: none;
+}
+
+.portfolio-case-link .fa { transition: transform 0.2s ease; }
+
+.portfolio-case-link:hover .fa { transform: translateX(4px); }
+
 /* =============================================
    Achievement cards
    ============================================= */
