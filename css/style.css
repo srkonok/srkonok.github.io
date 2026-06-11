@@ -1,20 +1,22 @@
-/*Font Awesome Free Icon*/
-@import url("https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css");
-/*Google fonts*/
-@import url('https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700&display=swap');
-@import url('https://fonts.googleapis.com/css?family=Rubik:500,700,900&display=swap');
-
 /* CSS Custom Properties */
 :root {
     --skin-color: #2196f3;
     --bg-black-50: #f9f9f9;
     --bg-black-100: #e0e0e0;
     --text-black-700: #555555;
+    --sidebar-width: 270px;
 }
 body.dark {
     --bg-black-50: #2b2b2b;
     --bg-black-100: #3a3a3a;
     --text-black-700: #cccccc;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg-black-50: #2b2b2b;
+        --bg-black-100: #3a3a3a;
+        --text-black-700: #cccccc;
+    }
 }
 
 /* General Style */
@@ -29,9 +31,12 @@ body {
 * {
     margin: 0;
     padding: 0;
-    outline: none;
     text-decoration: none;
     box-sizing: border-box;
+}
+
+*:not(:focus-visible) {
+    outline: none;
 }
 
 ::before,
@@ -51,7 +56,7 @@ select {
     display: block;
     padding: 0 30px;
     position: fixed;
-    left: 270px;
+    left: var(--sidebar-width);
     top: 0;
     right: 0;
     bottom: 0;
@@ -233,7 +238,7 @@ select {
 /* Aside */
 
 .aside {
-    width: 270px;
+    width: var(--sidebar-width);
     background-color: #fdf9ff;
     position: fixed;
     height: 100%;
@@ -1501,7 +1506,7 @@ body.dark .contact-card h4 { color: #fff; }
     }
 
     .aside {
-        left: -270px;
+        left: calc(-1 * var(--sidebar-width));
     }
 
     .aside.open {
@@ -1513,7 +1518,7 @@ body.dark .contact-card h4 { color: #fff; }
     }
 
     .section.open {
-        left: 270px;
+        left: var(--sidebar-width);
     }
 
     .about .about-content .personal-info .info-item p span {

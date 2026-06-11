@@ -5,7 +5,6 @@ const routes = {
   home: 'partials/main.html',
   about: 'partials/about.html',
   certification: 'partials/certification.html',
-  certifications: 'partials/certification.html',
   services: 'partials/service.html',
   portfolio: 'partials/portfolio.html',
   blog: 'partials/blog.html',
@@ -13,6 +12,7 @@ const routes = {
 };
 
 let navLinks, navToggler, aside, mainContent;
+const carouselTimers = [];
 
 // --- SEO: per-route document title, description, canonical ---
 
@@ -25,8 +25,7 @@ const DEFAULT_DESCRIPTION = document
 
 const sectionMeta = {
   about: ['About', 'About Md Shahriar Rahman - Software Engineer in Dhaka, Bangladesh. Skills, education, and experience in backend development, AWS cloud, and DevOps.'],
-  certification: ['Certifications', 'Professional certifications of Md Shahriar Rahman, including AWS Certified Cloud Practitioner.'],
-  certifications: ['Certifications', 'Professional certifications of Md Shahriar Rahman, including AWS Certified Cloud Practitioner.'],
+  certification: ['Certifications', 'Professional certifications of Md Shahriar Rahman, including AWS Certified Engineer and Cloud Management with AWS.'],
   services: ['Services', 'Services offered by Md Shahriar Rahman: backend API development, AWS cloud architecture, CI/CD pipelines, and DevOps consulting.'],
   portfolio: ['Portfolio', 'Selected projects by Md Shahriar Rahman - ERP systems, government platforms, backend APIs, and cloud deployments.'],
   blog: ['Blog', 'Articles on backend development, AWS cloud, DevOps, CI/CD, and system design by Md Shahriar Rahman.'],
@@ -56,12 +55,15 @@ function updateSEO(base, slug) {
   document.querySelector('link[rel="canonical"]').setAttribute('href', canonical);
 }
 
-let portfolioItems = [];
-
 // --- App bootstrap ---
 
 async function initializeApp() {
   await loadSidebar();
+  if (!navToggler || !mainContent) {
+    document.getElementById('root-container').innerHTML =
+      '<p style="padding:40px;font-family:sans-serif">Failed to load the page. Please refresh.</p>';
+    return;
+  }
   setupEventListeners();
   const initialSection = window.location.hash.substring(1) || 'home';
   await loadSection(initialSection);
@@ -105,7 +107,13 @@ function setupEventListeners() {
   document.addEventListener('click', handleDocumentClick);
 }
 
-async function loadSection(section) {
+async function loadSection(rawSection) {
+  // Normalise aliases to canonical section name
+  const section = rawSection === 'certifications' ? 'certification' : rawSection;
+
+  // Clear any running carousel timers from the previous section
+  while (carouselTimers.length) clearInterval(carouselTimers.pop());
+
   try {
     const [base, slug] = section.split('/');
     const url = base === 'blog' && slug
@@ -128,11 +136,16 @@ async function loadSection(section) {
     else if (section === 'blog') initBlogPosts();
     else if (section === 'home') initTyped();
     else if (section === 'contact') initContactForm();
-    else if (section === 'certification' || section === 'certifications') initCarousels();
+    else if (section === 'certification') initCarousels();
 
     wireNavButtons();
   } catch (error) {
     console.error('Error loading section:', error);
+    mainContent.innerHTML = `
+      <div style="padding:80px 40px;text-align:center;font-family:'Montserrat',sans-serif;">
+        <p style="font-size:18px;color:#504e70;">Could not load this page.</p>
+        <a href="#home" style="margin-top:16px;display:inline-block;color:var(--skin-color);">Go to Home</a>
+      </div>`;
   }
 }
 
@@ -163,7 +176,7 @@ function initTyped() {
 
 function initPortfolioFilter() {
   const filterContainer = mainContent.querySelector('.portfolio-filter');
-  portfolioItems = Array.from(mainContent.querySelectorAll('.portfolio-item'));
+  const portfolioItems = Array.from(mainContent.querySelectorAll('.portfolio-item'));
 
   if (!filterContainer || portfolioItems.length === 0) return;
 
@@ -290,7 +303,6 @@ function initCarousels() {
     const prev = carousel.querySelector('.ach-carousel-prev');
     const next = carousel.querySelector('.ach-carousel-next');
     let current = 0;
-    let timer;
 
     function goTo(i) {
       current = (i + imgs.length) % imgs.length;
@@ -299,8 +311,12 @@ function initCarousels() {
     }
 
     function resetTimer() {
-      clearInterval(timer);
-      timer = setInterval(() => goTo(current + 1), 3000);
+      // Remove any existing timer for this carousel before creating a new one
+      const existing = carousel._timerId;
+      if (existing) clearInterval(existing);
+      const id = setInterval(() => goTo(current + 1), 3000);
+      carousel._timerId = id;
+      carouselTimers.push(id);
     }
 
     if (prev) prev.addEventListener('click', e => { e.stopPropagation(); goTo(current - 1); resetTimer(); });

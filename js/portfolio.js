@@ -10,7 +10,7 @@ export const blogs = [
   },
   {
     slug: "laravel-microservices-government-system",
-    image: "images/blog/framework.webp",
+    image: "images/blog/laravel-microservices.webp",
     date: "28 Oct 2024",
     title: "Building a Multi-District Government System with Laravel Microservices",
     description:
@@ -19,7 +19,7 @@ export const blogs = [
   },
   {
     slug: "cut-deployment-time-github-actions-docker",
-    image: "images/blog/income.webp",
+    image: "images/blog/cicd-docker.webp",
     date: "4 Jan 2025",
     title: "How I Cut API Deployment Time by 60% Using GitHub Actions & Docker",
     description:
