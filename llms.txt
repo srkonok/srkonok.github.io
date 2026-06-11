@@ -23,6 +23,6 @@ frequently-asked-questions section summarising its key answers.
 
 - [Homepage](https://srkonok.github.io/): profile, skills, portfolio, services, and contact details
 - [Blog index](https://srkonok.github.io/blog/): all posts
-- [Resume (PDF)](https://srkonok.github.io/Shahriar_Rahman_Resume.pdf)
+- [Resume (PDF)](https://srkonok.github.io/Shahriar_Rahman_Resume_v2.1.pdf)
 - [GitHub](https://github.com/srkonok)
 - [LinkedIn](https://www.linkedin.com/in/shah-konok)

@@ -285,7 +285,7 @@ ${newestFirst.map(b => `- [${b.title}](${SITE_URL}/blog/${b.slug}/): ${b.descrip
 
 - [Homepage](${SITE_URL}/): profile, skills, portfolio, services, and contact details
 - [Blog index](${SITE_URL}/blog/): all posts
-- [Resume (PDF)](${SITE_URL}/Shahriar_Rahman_Resume.pdf)
+- [Resume (PDF)](${SITE_URL}/Shahriar_Rahman_Resume_v2.1.pdf)
 - [GitHub](https://github.com/srkonok)
 - [LinkedIn](https://www.linkedin.com/in/shah-konok)
 `;
