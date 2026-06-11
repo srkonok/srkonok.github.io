@@ -1,7 +1,7 @@
 export const blogs = [
   {
     slug: "aws-cloud-practitioner-study-plan",
-    image: "images/blog/learn.jpeg",
+    image: "images/blog/learn.webp",
     date: "15 Mar 2024",
     title: "AWS Cloud Practitioner: My Study Plan and Key Takeaways",
     description:
@@ -28,7 +28,7 @@ export const blogs = [
   },
   {
     slug: "choosing-aws-compute-ec2-ecs-lambda",
-    image: "images/blog/aws-compute.jpg",
+    image: "images/blog/aws-compute.webp",
     date: "18 Feb 2025",
     title: "EC2 vs ECS vs Lambda: Choosing the Right Compute on AWS",
     description:
@@ -37,7 +37,7 @@ export const blogs = [
   },
   {
     slug: "aws-vpc-networking-fundamentals",
-    image: "images/blog/vpc-networking.jpg",
+    image: "images/blog/vpc-networking.webp",
     date: "22 Apr 2025",
     title: "AWS VPC Networking Explained: Subnets, Route Tables, and NAT",
     description:
@@ -46,7 +46,7 @@ export const blogs = [
   },
   {
     slug: "docker-multi-stage-builds-smaller-images",
-    image: "images/blog/docker-builds.jpg",
+    image: "images/blog/docker-builds.webp",
     date: "10 Jun 2025",
     title: "Docker Multi-Stage Builds: From 1.2GB Images to 90MB",
     description:
@@ -55,7 +55,7 @@ export const blogs = [
   },
   {
     slug: "monitoring-prometheus-grafana-microservices",
-    image: "images/blog/monitoring.jpg",
+    image: "images/blog/monitoring.webp",
     date: "5 Sep 2025",
     title: "Monitoring Microservices with Prometheus and Grafana",
     description:
@@ -64,7 +64,7 @@ export const blogs = [
   },
   {
     slug: "designing-rate-limiter-system-design",
-    image: "images/blog/rate-limiter.jpg",
+    image: "images/blog/rate-limiter.webp",
     date: "12 Dec 2025",
     title: "Designing a Rate Limiter: A Practical System Design Walkthrough",
     description:
@@ -73,7 +73,7 @@ export const blogs = [
   },
   {
     slug: "scaling-databases-replication-sharding-caching",
-    image: "images/blog/database-scaling.jpg",
+    image: "images/blog/database-scaling.webp",
     date: "20 Mar 2026",
     title: "Scaling Databases: Replication, Sharding, and Caching in Practice",
     description:
