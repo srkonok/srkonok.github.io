@@ -13,7 +13,7 @@ import { blogs } from '../js/portfolio.js';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SITE_URL = 'https://srkonok.github.io';
 const AUTHOR = 'Md Shahriar Rahman';
-const SKIN = '#ec1839';
+const SKIN = '#2196f3';
 
 const MONTHS = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
                  Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
@@ -56,6 +56,12 @@ const PAGE_CSS = `
   article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
                 overflow-x: auto; margin-bottom: 16px; }
   article pre code { background: none; color: inherit; padding: 0; }
+  .faq { margin-top: 45px; border-top: 1px solid #e8dfec; padding-top: 30px; }
+  .faq h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin-bottom: 18px; }
+  .faq details { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 8px;
+                 padding: 14px 18px; margin-bottom: 12px; }
+  .faq summary { font-weight: 600; cursor: pointer; color: #302e4d; }
+  .faq details p { margin: 12px 0 0; color: #504e70; }
   .post-tags { margin-top: 35px; }
   .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
                     font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
@@ -127,8 +133,7 @@ for (const blog of blogs) {
   const isoDate = toISODate(blog.date);
   const image = `${SITE_URL}/${blog.image}`;
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
+  const graph = [{
     '@type': 'BlogPosting',
     headline: blog.title,
     description: blog.description,
@@ -138,8 +143,25 @@ for (const blog of blogs) {
     keywords: blog.tags.join(', '),
     author: { '@type': 'Person', name: AUTHOR, url: `${SITE_URL}/`, '@id': `${SITE_URL}/#person` },
     publisher: { '@id': `${SITE_URL}/#person` },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': canonical }
-  };
+    mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: ['article h1', 'article > p:first-of-type']
+    }
+  }];
+
+  if (blog.faqs?.length) {
+    graph.push({
+      '@type': 'FAQPage',
+      mainEntity: blog.faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a }
+      }))
+    });
+  }
+
+  const jsonLd = { '@context': 'https://schema.org', '@graph': graph };
 
   const extraHead = `  <meta property="og:image" content="${image}">
   <meta property="article:published_time" content="${isoDate}">
@@ -151,11 +173,20 @@ ${blog.tags.map(t => `  <meta property="article:tag" content="${escapeAttr(t)}">
   <meta name="twitter:image" content="${image}">
   <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`;
 
+  const faqSection = blog.faqs?.length ? `
+    <section class="faq" aria-label="Frequently asked questions">
+      <h2>Frequently asked questions</h2>
+${blog.faqs.map(f => `      <details open>
+        <summary>${escapeAttr(f.q)}</summary>
+        <p>${escapeAttr(f.a)}</p>
+      </details>`).join('\n')}
+    </section>` : '';
+
   // The article markup already contains the h1 header; add date + tags around it.
   const body = `    <article>
 ${match[1].replace(/class="blog-post-meta">/, `class="post-meta">${blog.date} &middot; `)}
       <p class="post-tags">${blog.tags.map(t => `<span>${escapeAttr(t)}</span>`).join(' ')}</p>
-    </article>
+    </article>${faqSection}
     <a class="back-link" href="/blog/">&larr; All posts</a>`;
 
   const dir = join(ROOT, 'blog', blog.slug);
@@ -234,3 +265,30 @@ ${urls.map(u => `  <url>
 
 writeFileSync(join(ROOT, 'sitemap.xml'), sitemap);
 console.log(`wrote sitemap.xml (${urls.length} URLs)`);
+
+// --- llms.txt (https://llmstxt.org): site guide for AI assistants and answer engines ---
+
+const llmsTxt = `# Md Shahriar Rahman — Software Engineer
+
+> Personal site and technical blog of ${AUTHOR}, a software engineer in Dhaka, Bangladesh
+> with 3+ years of experience in backend APIs, ERP systems, AWS cloud, and CI/CD.
+> AWS Certified Cloud Practitioner. Writes about cloud architecture, DevOps, and system design.
+
+Each blog post below is a standalone HTML page with the full article text and a
+frequently-asked-questions section summarising its key answers.
+
+## Blog posts
+
+${newestFirst.map(b => `- [${b.title}](${SITE_URL}/blog/${b.slug}/): ${b.description}`).join('\n')}
+
+## Site
+
+- [Homepage](${SITE_URL}/): profile, skills, portfolio, services, and contact details
+- [Blog index](${SITE_URL}/blog/): all posts
+- [Resume (PDF)](${SITE_URL}/Shahriar_Rahman_Resume.pdf)
+- [GitHub](https://github.com/srkonok)
+- [LinkedIn](https://www.linkedin.com/in/shah-konok)
+`;
+
+writeFileSync(join(ROOT, 'llms.txt'), llmsTxt);
+console.log('wrote llms.txt');

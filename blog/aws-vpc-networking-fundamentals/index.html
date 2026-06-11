@@ -14,7 +14,7 @@
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://srkonok.github.io/blog/aws-vpc-networking-fundamentals/">
   <meta property="og:site_name" content="Md Shahriar Rahman">
-  <meta property="og:image" content="https://srkonok.github.io/images/blog/vpc-networking.jpg">
+  <meta property="og:image" content="https://srkonok.github.io/images/blog/vpc-networking.webp">
   <meta property="article:published_time" content="2025-04-22">
   <meta property="article:author" content="Md Shahriar Rahman">
   <meta property="article:tag" content="AWS">
@@ -23,11 +23,11 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="AWS VPC Networking Explained: Subnets, Route Tables, and NAT">
   <meta name="twitter:description" content="VPC networking is where most cloud engineers' mental models break down. This post builds one from scratch: public vs private subnets, route tables, internet and NAT gateways, and security groups vs NACLs, ending with the three-tier network layout I use as a default for production workloads.">
-  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/vpc-networking.jpg">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"AWS VPC Networking Explained: Subnets, Route Tables, and NAT","description":"VPC networking is where most cloud engineers' mental models break down. This post builds one from scratch: public vs private subnets, route tables, internet and NAT gateways, and security groups vs NACLs, ending with the three-tier network layout I use as a default for production workloads.","image":"https://srkonok.github.io/images/blog/vpc-networking.jpg","datePublished":"2025-04-22","dateModified":"2025-04-22","keywords":"AWS, Cloud, Networking","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/aws-vpc-networking-fundamentals/"}}</script>
+  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/vpc-networking.webp">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","headline":"AWS VPC Networking Explained: Subnets, Route Tables, and NAT","description":"VPC networking is where most cloud engineers' mental models break down. This post builds one from scratch: public vs private subnets, route tables, internet and NAT gateways, and security groups vs NACLs, ending with the three-tier network layout I use as a default for production workloads.","image":"https://srkonok.github.io/images/blog/vpc-networking.webp","datePublished":"2025-04-22","dateModified":"2025-04-22","keywords":"AWS, Cloud, Networking","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/aws-vpc-networking-fundamentals/"},"speakable":{"@type":"SpeakableSpecification","cssSelector":["article h1","article > p:first-of-type"]}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What makes a subnet public in AWS?","acceptedAnswer":{"@type":"Answer","text":"Only its route table. A subnet is public when its route table sends 0.0.0.0/0 to an Internet Gateway; a private subnet is one whose route table doesn't. There is no 'public subnet' setting on the subnet itself."}},{"@type":"Question","name":"What is the difference between an Internet Gateway and a NAT Gateway?","acceptedAnswer":{"@type":"Answer","text":"An Internet Gateway is a two-way door: traffic in and out for resources with public IPs. A NAT Gateway is one-way: instances in private subnets can initiate outbound connections, but nothing can connect in. A NAT Gateway must live in a public subnet and is billed per hour and per gigabyte."}},{"@type":"Question","name":"Security groups vs NACLs: which should I use?","acceptedAnswer":{"@type":"Answer","text":"Security groups for almost everything. They are stateful, instance-level, allow-only firewalls and should carry about 95% of your access control. NACLs are stateless subnet-boundary filters that support deny rules; leave them at defaults unless you need a hard subnet-level block."}}]}]}</script>
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
   <style>
-  :root { --skin: #ec1839; }
+  :root { --skin: #2196f3; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
          color: #302e4d; background: #f2f2fc; }
@@ -54,6 +54,12 @@
   article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
                 overflow-x: auto; margin-bottom: 16px; }
   article pre code { background: none; color: inherit; padding: 0; }
+  .faq { margin-top: 45px; border-top: 1px solid #e8dfec; padding-top: 30px; }
+  .faq h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin-bottom: 18px; }
+  .faq details { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 8px;
+                 padding: 14px 18px; margin-bottom: 12px; }
+  .faq summary { font-weight: 600; cursor: pointer; color: #302e4d; }
+  .faq details p { margin: 12px 0 0; color: #504e70; }
   .post-tags { margin-top: 35px; }
   .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
                     font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
@@ -91,12 +97,12 @@
       </header>
 
       <p>VPC networking is where most cloud engineers' mental models break down. You can deploy applications
-        for years on the default VPC without understanding what a route table does — until the day a Lambda
+        for years on the default VPC without understanding what a route table does, until the day a Lambda
         in a private subnet can't reach the internet, or a database is accidentally public. This post builds
         the mental model from scratch, the way I teach it.</p>
 
       <h2>The VPC is just an address space</h2>
-      <p>A VPC is a private slice of IP address space, defined by a CIDR block like <code>10.0.0.0/16</code> —
+      <p>A VPC is a private slice of IP address space, defined by a CIDR block like <code>10.0.0.0/16</code>:
         about 65,000 addresses that belong to you. Nothing in it can be reached from outside until you
         explicitly create a path. Every piece of VPC networking is about controlling those paths.</p>
 
@@ -104,7 +110,7 @@
       <p>A subnet is a smaller CIDR range inside the VPC, tied to one Availability Zone. Here's the part that
         unlocks everything: <strong>there is no "public subnet" checkbox.</strong> A subnet is public only
         because its route table sends <code>0.0.0.0/0</code> to an Internet Gateway. A private subnet is just
-        one whose route table doesn't. The subnet itself is identical — the route table defines its nature.</p>
+        one whose route table doesn't. The subnet itself is identical; the route table defines its nature.</p>
 
       <h2>Route tables: the actual decision-makers</h2>
       <p>Every subnet consults exactly one route table to decide where traffic goes. A typical pair looks
@@ -117,7 +123,7 @@
           <code>0.0.0.0/0 → nat-xxxx</code> (NAT Gateway). Resources can reach out, but nothing can
           reach in.</li>
       </ul>
-      <p>When something "can't connect", the route table is the first place I look — before security groups,
+      <p>When something "can't connect", the route table is the first place I look, before security groups,
         before DNS.</p>
 
       <h2>Internet Gateway vs NAT Gateway</h2>
@@ -125,7 +131,7 @@
         Gateway is a one-way door: instances in private subnets can initiate outbound connections (pulling
         packages, calling external APIs), but inbound connections are impossible. Two practical notes that
         bite people: a NAT Gateway must itself live in a <em>public</em> subnet, and it costs money per hour
-        and per GB — an idle NAT Gateway in three AZs is a surprisingly common line item on the bill.</p>
+        and per GB. An idle NAT Gateway in three AZs is a surprisingly common line item on the bill.</p>
 
       <h2>Security groups vs NACLs</h2>
       <ul>
@@ -142,7 +148,7 @@
       <ul>
         <li><strong>Public subnets:</strong> load balancers and NAT Gateways only. Nothing else.</li>
         <li><strong>Private app subnets:</strong> ECS tasks, EC2 instances, Lambda ENIs. Outbound via NAT.</li>
-        <li><strong>Private data subnets:</strong> RDS and ElastiCache, with no route to the internet at all —
+        <li><strong>Private data subnets:</strong> RDS and ElastiCache, with no route to the internet at all;
           their security groups accept traffic only from the app tier's security group.</li>
       </ul>
 
@@ -152,6 +158,21 @@
     
       <p class="post-tags"><span>AWS</span> <span>Cloud</span> <span>Networking</span></p>
     </article>
+    <section class="faq" aria-label="Frequently asked questions">
+      <h2>Frequently asked questions</h2>
+      <details open>
+        <summary>What makes a subnet public in AWS?</summary>
+        <p>Only its route table. A subnet is public when its route table sends 0.0.0.0/0 to an Internet Gateway; a private subnet is one whose route table doesn't. There is no 'public subnet' setting on the subnet itself.</p>
+      </details>
+      <details open>
+        <summary>What is the difference between an Internet Gateway and a NAT Gateway?</summary>
+        <p>An Internet Gateway is a two-way door: traffic in and out for resources with public IPs. A NAT Gateway is one-way: instances in private subnets can initiate outbound connections, but nothing can connect in. A NAT Gateway must live in a public subnet and is billed per hour and per gigabyte.</p>
+      </details>
+      <details open>
+        <summary>Security groups vs NACLs: which should I use?</summary>
+        <p>Security groups for almost everything. They are stateful, instance-level, allow-only firewalls and should carry about 95% of your access control. NACLs are stateless subnet-boundary filters that support deny rules; leave them at defaults unless you need a hard subnet-level block.</p>
+      </details>
+    </section>
     <a class="back-link" href="/blog/">&larr; All posts</a>
   </main>
   <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>

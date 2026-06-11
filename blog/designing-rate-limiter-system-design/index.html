@@ -14,7 +14,7 @@
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://srkonok.github.io/blog/designing-rate-limiter-system-design/">
   <meta property="og:site_name" content="Md Shahriar Rahman">
-  <meta property="og:image" content="https://srkonok.github.io/images/blog/rate-limiter.jpg">
+  <meta property="og:image" content="https://srkonok.github.io/images/blog/rate-limiter.webp">
   <meta property="article:published_time" content="2025-12-12">
   <meta property="article:author" content="Md Shahriar Rahman">
   <meta property="article:tag" content="System Design">
@@ -23,11 +23,11 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Designing a Rate Limiter: A Practical System Design Walkthrough">
   <meta name="twitter:description" content="The rate limiter is a system design classic because it packs real distributed-systems tradeoffs into a small problem. Token bucket vs sliding window, where the limiter lives in your architecture, keeping counters in Redis, and what changes when you go from one server to twenty.">
-  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/rate-limiter.jpg">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Designing a Rate Limiter: A Practical System Design Walkthrough","description":"The rate limiter is a system design classic because it packs real distributed-systems tradeoffs into a small problem. Token bucket vs sliding window, where the limiter lives in your architecture, keeping counters in Redis, and what changes when you go from one server to twenty.","image":"https://srkonok.github.io/images/blog/rate-limiter.jpg","datePublished":"2025-12-12","dateModified":"2025-12-12","keywords":"System Design, Backend, Scalability","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/designing-rate-limiter-system-design/"}}</script>
+  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/rate-limiter.webp">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","headline":"Designing a Rate Limiter: A Practical System Design Walkthrough","description":"The rate limiter is a system design classic because it packs real distributed-systems tradeoffs into a small problem. Token bucket vs sliding window, where the limiter lives in your architecture, keeping counters in Redis, and what changes when you go from one server to twenty.","image":"https://srkonok.github.io/images/blog/rate-limiter.webp","datePublished":"2025-12-12","dateModified":"2025-12-12","keywords":"System Design, Backend, Scalability","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/designing-rate-limiter-system-design/"},"speakable":{"@type":"SpeakableSpecification","cssSelector":["article h1","article > p:first-of-type"]}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Which algorithm should I use for a rate limiter?","acceptedAnswer":{"@type":"Answer","text":"Token bucket is the best default: a bucket of N tokens refills at a steady rate and each request spends one. It allows short bursts while enforcing the average rate, and per-client state is just two numbers (token count and last-refill timestamp). Sliding window counter is a solid alternative."}},{"@type":"Question","name":"How do you rate limit across multiple servers?","acceptedAnswer":{"@type":"Answer","text":"Move the counters to a shared store, usually Redis, and make the check-and-decrement atomic with a small Lua script. Per-server in-memory counters silently multiply a client's effective limit by the number of servers."}},{"@type":"Question","name":"Should a rate limiter fail open or fail closed when Redis is down?","acceptedAnswer":{"@type":"Answer","text":"Decide explicitly. For most public APIs, fail open (allow traffic, alert loudly) because rate limiting is protection rather than a security boundary; fail closed only when the backend must be protected at the cost of rejecting users."}}]}]}</script>
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
   <style>
-  :root { --skin: #ec1839; }
+  :root { --skin: #2196f3; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
          color: #302e4d; background: #f2f2fc; }
@@ -54,6 +54,12 @@
   article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
                 overflow-x: auto; margin-bottom: 16px; }
   article pre code { background: none; color: inherit; padding: 0; }
+  .faq { margin-top: 45px; border-top: 1px solid #e8dfec; padding-top: 30px; }
+  .faq h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin-bottom: 18px; }
+  .faq details { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 8px;
+                 padding: 14px 18px; margin-bottom: 12px; }
+  .faq summary { font-weight: 600; cursor: pointer; color: #302e4d; }
+  .faq details p { margin: 12px 0 0; color: #504e70; }
   .post-tags { margin-top: 35px; }
   .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
                     font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
@@ -91,7 +97,7 @@
       </header>
 
       <p>The rate limiter is a system design classic for good reason: it's small enough to design in an hour,
-        yet it forces you through real distributed-systems trade-offs — accuracy vs memory, consistency vs
+        yet it forces you through real distributed-systems trade-offs: accuracy vs memory, consistency vs
         latency, what happens when your dependencies fail. I've both built one for a production API and used
         it as an interview exercise. Here's the walkthrough I'd give either audience.</p>
 
@@ -103,25 +109,25 @@
 
       <h2>Choosing the algorithm</h2>
       <ul>
-        <li><strong>Fixed window</strong> — count requests per minute, reset on the boundary. Trivial, but a
+        <li><strong>Fixed window:</strong> count requests per minute, reset on the boundary. Trivial, but a
           client can send 2× the limit straddling the boundary (100 requests at 11:59:59, 100 more at
           12:00:00).</li>
-        <li><strong>Sliding window log</strong> — store a timestamp per request and count the last 60 seconds.
+        <li><strong>Sliding window log:</strong> store a timestamp per request and count the last 60 seconds.
           Perfectly accurate, but memory grows with traffic; storing a timestamp per request defeats the
           purpose at scale.</li>
-        <li><strong>Sliding window counter</strong> — weight the previous window's count by overlap. Good
+        <li><strong>Sliding window counter:</strong> weight the previous window's count by overlap. Good
           accuracy, constant memory. A solid choice.</li>
-        <li><strong>Token bucket</strong> — a bucket of N tokens refilling at a steady rate; each request
+        <li><strong>Token bucket:</strong> a bucket of N tokens refilling at a steady rate; each request
           spends one. Constant memory, and it naturally allows short bursts while enforcing the average
-          rate — which usually matches what you actually want for an API.</li>
+          rate, which usually matches what you actually want for an API.</li>
       </ul>
       <p>I default to token bucket: clients get burst tolerance, you get a steady average, and the state per
-        client is just two numbers — token count and last-refill timestamp.</p>
+        client is just two numbers: token count and last-refill timestamp.</p>
 
       <h2>Where the limiter lives</h2>
       <p>In-process middleware is fine for one server. The moment you run multiple instances behind a load
         balancer, per-server counters mean a client's effective limit is N × servers. So state moves to a
-        shared store — Redis is the standard answer: fast, supports atomic operations, and TTLs expire idle
+        shared store. Redis is the standard answer: fast, supports atomic operations, and TTLs expire idle
         clients' state automatically. The check must be atomic (read tokens, refill, decrement, write back),
         otherwise two concurrent requests both pass on the last token. A small Lua script executed in Redis
         does the whole sequence as one atomic operation.</p>
@@ -130,7 +136,7 @@
       <ul>
         <li><strong>What if Redis goes down?</strong> Decide explicitly: fail open (allow traffic, lose
           protection) or fail closed (reject traffic to protect the backend). For most public APIs I fail
-          open and alert loudly — rate limiting is protection, not a security boundary.</li>
+          open and alert loudly; rate limiting is protection, not a security boundary.</li>
         <li><strong>Latency.</strong> Each request now pays a Redis round trip. Keep Redis in the same
           network/AZ; at higher scale, batch token grants locally (each server takes tokens in chunks),
           trading a little accuracy for a big latency win.</li>
@@ -141,15 +147,30 @@
       <h2>The API contract matters too</h2>
       <p>Return <code>429 Too Many Requests</code> with <code>Retry-After</code>, and include
         <code>X-RateLimit-Limit</code>, <code>X-RateLimit-Remaining</code>, and <code>X-RateLimit-Reset</code>
-        on every response — well-behaved clients will throttle themselves before you have to. That single
+        on every response; well-behaved clients will throttle themselves before you have to. That single
         practice reduced our actual 429 rate more than any tuning of the algorithm did.</p>
 
       <p>The pattern to take away: the algorithm is the easy 20%. The real design work is state placement,
-        atomicity, failure behaviour, and the client contract — and that's true of most system design
+        atomicity, failure behaviour, and the client contract, and that's true of most system design
         problems, not just this one.</p>
     
       <p class="post-tags"><span>System Design</span> <span>Backend</span> <span>Scalability</span></p>
     </article>
+    <section class="faq" aria-label="Frequently asked questions">
+      <h2>Frequently asked questions</h2>
+      <details open>
+        <summary>Which algorithm should I use for a rate limiter?</summary>
+        <p>Token bucket is the best default: a bucket of N tokens refills at a steady rate and each request spends one. It allows short bursts while enforcing the average rate, and per-client state is just two numbers (token count and last-refill timestamp). Sliding window counter is a solid alternative.</p>
+      </details>
+      <details open>
+        <summary>How do you rate limit across multiple servers?</summary>
+        <p>Move the counters to a shared store, usually Redis, and make the check-and-decrement atomic with a small Lua script. Per-server in-memory counters silently multiply a client's effective limit by the number of servers.</p>
+      </details>
+      <details open>
+        <summary>Should a rate limiter fail open or fail closed when Redis is down?</summary>
+        <p>Decide explicitly. For most public APIs, fail open (allow traffic, alert loudly) because rate limiting is protection rather than a security boundary; fail closed only when the backend must be protected at the cost of rejecting users.</p>
+      </details>
+    </section>
     <a class="back-link" href="/blog/">&larr; All posts</a>
   </main>
   <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>

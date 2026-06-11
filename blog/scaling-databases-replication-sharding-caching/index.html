@@ -14,7 +14,7 @@
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://srkonok.github.io/blog/scaling-databases-replication-sharding-caching/">
   <meta property="og:site_name" content="Md Shahriar Rahman">
-  <meta property="og:image" content="https://srkonok.github.io/images/blog/database-scaling.jpg">
+  <meta property="og:image" content="https://srkonok.github.io/images/blog/database-scaling.webp">
   <meta property="article:published_time" content="2026-03-20">
   <meta property="article:author" content="Md Shahriar Rahman">
   <meta property="article:tag" content="System Design">
@@ -23,11 +23,11 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Scaling Databases: Replication, Sharding, and Caching in Practice">
   <meta name="twitter:description" content="Most systems don't die from too much code. They die from one overloaded database. The scaling ladder I follow in practice: indexing and query fixes first, then read replicas, then caching with Redis, and only then sharding, with the failure modes each step introduces along the way.">
-  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/database-scaling.jpg">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Scaling Databases: Replication, Sharding, and Caching in Practice","description":"Most systems don't die from too much code. They die from one overloaded database. The scaling ladder I follow in practice: indexing and query fixes first, then read replicas, then caching with Redis, and only then sharding, with the failure modes each step introduces along the way.","image":"https://srkonok.github.io/images/blog/database-scaling.jpg","datePublished":"2026-03-20","dateModified":"2026-03-20","keywords":"System Design, Database, Scalability","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/scaling-databases-replication-sharding-caching/"}}</script>
+  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/database-scaling.webp">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","headline":"Scaling Databases: Replication, Sharding, and Caching in Practice","description":"Most systems don't die from too much code. They die from one overloaded database. The scaling ladder I follow in practice: indexing and query fixes first, then read replicas, then caching with Redis, and only then sharding, with the failure modes each step introduces along the way.","image":"https://srkonok.github.io/images/blog/database-scaling.webp","datePublished":"2026-03-20","dateModified":"2026-03-20","keywords":"System Design, Database, Scalability","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/scaling-databases-replication-sharding-caching/"},"speakable":{"@type":"SpeakableSpecification","cssSelector":["article h1","article > p:first-of-type"]}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"In what order should you scale a database?","acceptedAnswer":{"@type":"Answer","text":"Indexes and query fixes first, then read replicas, then caching with Redis, and sharding only as a last resort. Each step adds permanent complexity, so climb only as high as your traffic forces you to."}},{"@type":"Question","name":"What is replication lag and what bug does it cause?","acceptedAnswer":{"@type":"Answer","text":"A read replica is always slightly behind the primary. The classic bug: a user saves a form, the next page reads from a replica, and their change appears lost. Fix it with read-your-own-writes routing: pin a user's reads to the primary for a few seconds after they write."}},{"@type":"Question","name":"When should you shard a database?","acceptedAnswer":{"@type":"Answer","text":"Only when a single primary can no longer handle the write volume, since replicas and caching solve read scale. Sharding permanently costs you cross-shard joins and transactions, so consider managed alternatives like Aurora or DynamoDB before splitting the data yourself."}}]}]}</script>
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
   <style>
-  :root { --skin: #ec1839; }
+  :root { --skin: #2196f3; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
          color: #302e4d; background: #f2f2fc; }
@@ -54,6 +54,12 @@
   article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
                 overflow-x: auto; margin-bottom: 16px; }
   article pre code { background: none; color: inherit; padding: 0; }
+  .faq { margin-top: 45px; border-top: 1px solid #e8dfec; padding-top: 30px; }
+  .faq h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin-bottom: 18px; }
+  .faq details { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 8px;
+                 padding: 14px 18px; margin-bottom: 12px; }
+  .faq summary { font-weight: 600; cursor: pointer; color: #302e4d; }
+  .faq details p { margin: 12px 0 0; color: #504e70; }
   .post-tags { margin-top: 35px; }
   .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
                     font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
@@ -90,10 +96,10 @@
         <p class="post-meta">20 Mar 2026 &middot; System Design &middot; Database &middot; Scalability</p>
       </header>
 
-      <p>Most systems don't die from too much code — they die from one overloaded database. Application
+      <p>Most systems don't die from too much code. They die from one overloaded database. Application
         servers scale horizontally almost for free; the database is where state lives, and state is hard to
         split. Having watched a single MySQL instance grind a 50,000-user platform to a halt, here is the
-        scaling ladder I follow — in order, because each rung adds complexity you then live with forever.</p>
+        scaling ladder I follow, in order, because each rung adds complexity you then live with forever.</p>
 
       <h2>Rung 0: Make sure you actually have a scaling problem</h2>
       <p>Before any architecture change, spend a week on the boring work: enable the slow query log, add the
@@ -102,29 +108,29 @@
         rung has no architectural cost, and it routinely buys 10× headroom.</p>
 
       <h2>Rung 1: Read replicas</h2>
-      <p>Most workloads are read-heavy — often 90%+ reads. Replication streams changes from the primary to
+      <p>Most workloads are read-heavy, often 90%+ reads. Replication streams changes from the primary to
         one or more replicas; writes go to the primary, reads spread across replicas. Managed services
         (RDS, Cloud SQL) make the setup almost trivial, and frameworks like Laravel support read/write
         connection splitting natively.</p>
-      <p>The cost is <strong>replication lag</strong>: a replica is always slightly behind. The classic bug —
+      <p>The cost is <strong>replication lag</strong>: a replica is always slightly behind. The classic bug:
         user saves a form, the next page reads from a replica, their change is "gone". The fix is
         read-your-own-writes routing: after a write, pin that user's reads to the primary for a few seconds.
         Decide this policy up front, not after the bug reports arrive.</p>
 
       <h2>Rung 2: Caching</h2>
-      <p>A Redis cache in front of the database absorbs repeated reads — cache-aside (check cache, on miss
+      <p>A Redis cache in front of the database absorbs repeated reads: cache-aside (check cache, on miss
         read DB and populate) covers most needs. The design effort goes into invalidation:</p>
       <ul>
         <li><strong>TTL-only</strong> for data that tolerates staleness (rankings, counts, catalogue pages).</li>
-        <li><strong>Explicit invalidation on write</strong> for data that must read fresh — delete the key,
+        <li><strong>Explicit invalidation on write</strong> for data that must read fresh: delete the key,
           let the next read repopulate it. Deleting beats updating: it avoids racing writers.</li>
-        <li><strong>Stampede protection</strong> for hot keys — when a popular key expires, a thousand
+        <li><strong>Stampede protection</strong> for hot keys: when a popular key expires, a thousand
           requests hit the DB simultaneously. Locking or staggered TTLs prevent it.</li>
       </ul>
-      <p>Caching is the highest-leverage rung — we cut primary DB load by ~70% — but every cached read is a
+      <p>Caching is the highest-leverage rung (we cut primary DB load by ~70%), but every cached read is a
         small consistency decision someone has to own.</p>
 
-      <h2>Rung 3: Sharding — the last resort</h2>
+      <h2>Rung 3: Sharding, the last resort</h2>
       <p>When a single primary can no longer handle the <em>write</em> volume, you split the data itself:
         each shard holds a subset of rows, keyed by something like user ID. This is the only rung that
         scales writes horizontally, and the only one that changes your application permanently:</p>
@@ -137,17 +143,32 @@
         <li><strong>Resharding is painful.</strong> Plan for more shards than you need (e.g. many virtual
           shards mapped onto few physical nodes) so growth is remapping, not re-splitting.</li>
       </ul>
-      <p>If a managed alternative fits — Aurora for read scale, DynamoDB or similar for naturally
-        partitionable data — seriously consider letting it do the sharding for you.</p>
+      <p>If a managed alternative fits (Aurora for read scale, DynamoDB or similar for naturally
+        partitionable data), seriously consider letting it do the sharding for you.</p>
 
       <h2>The ladder, summarised</h2>
       <p>Indexes and query fixes → read replicas → caching → sharding. Each rung up trades operational
         simplicity for capacity, and skipping rungs means paying complexity you didn't need yet. The systems
-        that age best are the ones that climbed exactly as high as their traffic forced them to — and no
+        that age best are the ones that climbed exactly as high as their traffic forced them to, and no
         higher.</p>
     
       <p class="post-tags"><span>System Design</span> <span>Database</span> <span>Scalability</span></p>
     </article>
+    <section class="faq" aria-label="Frequently asked questions">
+      <h2>Frequently asked questions</h2>
+      <details open>
+        <summary>In what order should you scale a database?</summary>
+        <p>Indexes and query fixes first, then read replicas, then caching with Redis, and sharding only as a last resort. Each step adds permanent complexity, so climb only as high as your traffic forces you to.</p>
+      </details>
+      <details open>
+        <summary>What is replication lag and what bug does it cause?</summary>
+        <p>A read replica is always slightly behind the primary. The classic bug: a user saves a form, the next page reads from a replica, and their change appears lost. Fix it with read-your-own-writes routing: pin a user's reads to the primary for a few seconds after they write.</p>
+      </details>
+      <details open>
+        <summary>When should you shard a database?</summary>
+        <p>Only when a single primary can no longer handle the write volume, since replicas and caching solve read scale. Sharding permanently costs you cross-shard joins and transactions, so consider managed alternatives like Aurora or DynamoDB before splitting the data yourself.</p>
+      </details>
+    </section>
     <a class="back-link" href="/blog/">&larr; All posts</a>
   </main>
   <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>

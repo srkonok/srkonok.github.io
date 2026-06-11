@@ -4,20 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Blog — Md Shahriar Rahman | Backend, Cloud &amp; DevOps Articles</title>
-  <meta name="description" content="Articles on backend development, AWS cloud, DevOps, CI/CD, and system design by Md Shahriar Rahman, Software Engineer and AWS Certified Engineer.">
+  <meta name="description" content="Articles on backend development, AWS cloud, DevOps, CI/CD, and system design by Md Shahriar Rahman, Software Engineer and AWS Certified Cloud Practitioner.">
   <meta name="author" content="Md Shahriar Rahman">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://srkonok.github.io/blog/">
   <link rel="icon" href="/favicon.ico">
   <meta property="og:title" content="Blog — Md Shahriar Rahman | Backend, Cloud &amp; DevOps Articles">
-  <meta property="og:description" content="Articles on backend development, AWS cloud, DevOps, CI/CD, and system design by Md Shahriar Rahman, Software Engineer and AWS Certified Engineer.">
+  <meta property="og:description" content="Articles on backend development, AWS cloud, DevOps, CI/CD, and system design by Md Shahriar Rahman, Software Engineer and AWS Certified Cloud Practitioner.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://srkonok.github.io/blog/">
   <meta property="og:site_name" content="Md Shahriar Rahman">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Blog","@id":"https://srkonok.github.io/blog/#blog","url":"https://srkonok.github.io/blog/","name":"Blog — Md Shahriar Rahman","description":"Articles on backend development, AWS cloud, DevOps, CI/CD, and system design.","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"blogPost":[{"@type":"BlogPosting","headline":"Scaling Databases: Replication, Sharding, and Caching in Practice","url":"https://srkonok.github.io/blog/scaling-databases-replication-sharding-caching/","datePublished":"2026-03-20"},{"@type":"BlogPosting","headline":"Designing a Rate Limiter: A Practical System Design Walkthrough","url":"https://srkonok.github.io/blog/designing-rate-limiter-system-design/","datePublished":"2025-12-12"},{"@type":"BlogPosting","headline":"Monitoring Microservices with Prometheus and Grafana","url":"https://srkonok.github.io/blog/monitoring-prometheus-grafana-microservices/","datePublished":"2025-09-05"},{"@type":"BlogPosting","headline":"Docker Multi-Stage Builds: From 1.2GB Images to 90MB","url":"https://srkonok.github.io/blog/docker-multi-stage-builds-smaller-images/","datePublished":"2025-06-10"},{"@type":"BlogPosting","headline":"AWS VPC Networking Explained: Subnets, Route Tables, and NAT","url":"https://srkonok.github.io/blog/aws-vpc-networking-fundamentals/","datePublished":"2025-04-22"},{"@type":"BlogPosting","headline":"EC2 vs ECS vs Lambda: Choosing the Right Compute on AWS","url":"https://srkonok.github.io/blog/choosing-aws-compute-ec2-ecs-lambda/","datePublished":"2025-02-18"},{"@type":"BlogPosting","headline":"How I Cut API Deployment Time by 60% Using GitHub Actions & Docker","url":"https://srkonok.github.io/blog/cut-deployment-time-github-actions-docker/","datePublished":"2025-01-04"},{"@type":"BlogPosting","headline":"Building a Multi-District Government System with Laravel Microservices","url":"https://srkonok.github.io/blog/laravel-microservices-government-system/","datePublished":"2024-10-28"},{"@type":"BlogPosting","headline":"AWS Cloud Practitioner: My Study Plan and Key Takeaways","url":"https://srkonok.github.io/blog/aws-cloud-practitioner-study-plan/","datePublished":"2024-03-15"}]}</script>
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
   <style>
-  :root { --skin: #ec1839; }
+  :root { --skin: #2196f3; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
          color: #302e4d; background: #f2f2fc; }
@@ -44,6 +44,12 @@
   article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
                 overflow-x: auto; margin-bottom: 16px; }
   article pre code { background: none; color: inherit; padding: 0; }
+  .faq { margin-top: 45px; border-top: 1px solid #e8dfec; padding-top: 30px; }
+  .faq h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin-bottom: 18px; }
+  .faq details { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 8px;
+                 padding: 14px 18px; margin-bottom: 12px; }
+  .faq summary { font-weight: 600; cursor: pointer; color: #302e4d; }
+  .faq details p { margin: 12px 0 0; color: #504e70; }
   .post-tags { margin-top: 35px; }
   .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
                     font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }

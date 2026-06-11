@@ -97,6 +97,7 @@ body.dark .about .about-content .personal-info .info-item p,
 body.dark .about .about-content .about-text h3,
 body.dark .home .intro h1,
 body.dark .about .about-content h3.title,
+body.dark .section h3.title,
 body.dark .section-title h2,
 body.dark .aside .logo a {
     color: #ffffff;

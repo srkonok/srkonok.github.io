@@ -14,7 +14,7 @@
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://srkonok.github.io/blog/choosing-aws-compute-ec2-ecs-lambda/">
   <meta property="og:site_name" content="Md Shahriar Rahman">
-  <meta property="og:image" content="https://srkonok.github.io/images/blog/aws-compute.jpg">
+  <meta property="og:image" content="https://srkonok.github.io/images/blog/aws-compute.webp">
   <meta property="article:published_time" content="2025-02-18">
   <meta property="article:author" content="Md Shahriar Rahman">
   <meta property="article:tag" content="AWS">
@@ -23,11 +23,11 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="EC2 vs ECS vs Lambda: Choosing the Right Compute on AWS">
   <meta name="twitter:description" content="Every AWS project starts with the same question: where should this code actually run? A practical decision framework for picking between EC2, ECS, and Lambda based on workload shape, traffic patterns, cost, and operational overhead, with real examples from production systems I've run on all three.">
-  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/aws-compute.jpg">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"EC2 vs ECS vs Lambda: Choosing the Right Compute on AWS","description":"Every AWS project starts with the same question: where should this code actually run? A practical decision framework for picking between EC2, ECS, and Lambda based on workload shape, traffic patterns, cost, and operational overhead, with real examples from production systems I've run on all three.","image":"https://srkonok.github.io/images/blog/aws-compute.jpg","datePublished":"2025-02-18","dateModified":"2025-02-18","keywords":"AWS, Cloud, Architecture","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/choosing-aws-compute-ec2-ecs-lambda/"}}</script>
+  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/aws-compute.webp">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","headline":"EC2 vs ECS vs Lambda: Choosing the Right Compute on AWS","description":"Every AWS project starts with the same question: where should this code actually run? A practical decision framework for picking between EC2, ECS, and Lambda based on workload shape, traffic patterns, cost, and operational overhead, with real examples from production systems I've run on all three.","image":"https://srkonok.github.io/images/blog/aws-compute.webp","datePublished":"2025-02-18","dateModified":"2025-02-18","keywords":"AWS, Cloud, Architecture","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/choosing-aws-compute-ec2-ecs-lambda/"},"speakable":{"@type":"SpeakableSpecification","cssSelector":["article h1","article > p:first-of-type"]}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"When should I use EC2 instead of Lambda or ECS?","acceptedAnswer":{"@type":"Answer","text":"Use EC2 when you need full control of the operating system, when software was not built for containers, or when the workload runs hot 24/7. A steady high-utilisation service on reserved instances is often the cheapest of the three options, at the cost of managing patching, AMIs, and autoscaling yourself."}},{"@type":"Question","name":"When is AWS Lambda the right choice?","acceptedAnswer":{"@type":"Answer","text":"For event-driven and bursty work: processing S3 uploads, reacting to queues, scheduled jobs, webhooks, and low-traffic APIs. Scale-to-zero makes idle endpoints nearly free. The trade-offs are cold starts, a 15-minute execution limit, and poor fit for persistent database connections."}},{"@type":"Question","name":"What should I pick if I'm not sure between EC2, ECS, and Lambda?","acceptedAnswer":{"@type":"Answer","text":"Start with Lambda or ECS on Fargate. It is far easier to move from serverless to servers when traffic justifies it than to recover the operations time spent managing instances you didn't need."}}]}]}</script>
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
   <style>
-  :root { --skin: #ec1839; }
+  :root { --skin: #2196f3; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
          color: #302e4d; background: #f2f2fc; }
@@ -54,6 +54,12 @@
   article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
                 overflow-x: auto; margin-bottom: 16px; }
   article pre code { background: none; color: inherit; padding: 0; }
+  .faq { margin-top: 45px; border-top: 1px solid #e8dfec; padding-top: 30px; }
+  .faq h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin-bottom: 18px; }
+  .faq details { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 8px;
+                 padding: 14px 18px; margin-bottom: 12px; }
+  .faq summary { font-weight: 600; cursor: pointer; color: #302e4d; }
+  .faq details p { margin: 12px 0 0; color: #504e70; }
   .post-tags { margin-top: 35px; }
   .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
                     font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
@@ -92,7 +98,7 @@
 
       <p>Every AWS project starts with the same question: where should this code actually run? I've shipped
         production workloads on EC2, ECS, and Lambda, and the honest answer is that all three are the right
-        choice — for different shapes of work. The mistake is picking based on familiarity or hype instead of
+        choice, just for different shapes of work. The mistake is picking based on familiarity or hype instead of
         the workload. Here's the decision framework I use.</p>
 
       <h2>Start with the workload shape, not the service</h2>
@@ -101,7 +107,7 @@
         <li><strong>Traffic pattern.</strong> Is it steady all day, spiky around events, or mostly idle with
           occasional bursts? Steady favours reserved capacity; spiky and idle favour pay-per-use.</li>
         <li><strong>Execution time.</strong> Requests measured in milliseconds, jobs measured in minutes, or
-          processes that never stop? Lambda caps out at 15 minutes — long-running work is disqualified
+          processes that never stop? Lambda caps out at 15 minutes, so long-running work is disqualified
           immediately.</li>
         <li><strong>State and dependencies.</strong> Does it need a local filesystem, a persistent connection
           pool, a specific runtime, or a GPU? The more it depends on its environment, the closer you stay
@@ -110,14 +116,14 @@
 
       <h2>When EC2 is the right answer</h2>
       <p>EC2 gets dismissed as "legacy" far too quickly. It's still the right call when you need full control
-        of the OS, when software wasn't built for containers, or when the workload runs hot 24/7 — a steady
+        of the OS, when software wasn't built for containers, or when the workload runs hot 24/7: a steady
         high-utilisation service on a reserved instance is often the cheapest option of the three. The price
         you pay is operational: patching, AMI management, capacity planning, and autoscaling configuration
         are all yours. If you're a small team, that overhead is real and recurring.</p>
 
       <h2>When ECS earns its place</h2>
       <p>ECS (especially with Fargate) is my default for web APIs and microservices. You get the deployment
-        consistency of containers — the same image runs in CI, staging, and production — without managing
+        consistency of containers (the same image runs in CI, staging, and production) without managing
         hosts. For the multi-service Laravel platform I worked on, ECS hit the sweet spot: services that run
         continuously, need predictable latency, and deploy several times a week. Rolling deployments,
         service discovery, and load balancer integration come essentially free. The cost model sits between
@@ -129,7 +135,7 @@
         messages, scheduled jobs, webhooks, and APIs with unpredictable or low traffic. Scale-to-zero means
         an endpoint that gets ten requests a day costs effectively nothing. The trade-offs are cold starts
         (manageable, but real for latency-sensitive APIs), the 15-minute limit, and an execution model that
-        punishes anything needing persistent connections — database connection pooling on Lambda requires
+        punishes anything needing persistent connections; database connection pooling on Lambda requires
         RDS Proxy or careful design.</p>
 
       <h2>My shortcut table</h2>
@@ -143,11 +149,26 @@
       </ul>
 
       <p>The meta-lesson: compute choice is a cost-and-operations decision dressed up as a technical one.
-        Pick the service whose trade-offs your team can actually afford to live with — and revisit the
+        Pick the service whose trade-offs your team can actually afford to live with, and revisit the
         decision when the traffic pattern changes, because it will.</p>
     
       <p class="post-tags"><span>AWS</span> <span>Cloud</span> <span>Architecture</span></p>
     </article>
+    <section class="faq" aria-label="Frequently asked questions">
+      <h2>Frequently asked questions</h2>
+      <details open>
+        <summary>When should I use EC2 instead of Lambda or ECS?</summary>
+        <p>Use EC2 when you need full control of the operating system, when software was not built for containers, or when the workload runs hot 24/7. A steady high-utilisation service on reserved instances is often the cheapest of the three options, at the cost of managing patching, AMIs, and autoscaling yourself.</p>
+      </details>
+      <details open>
+        <summary>When is AWS Lambda the right choice?</summary>
+        <p>For event-driven and bursty work: processing S3 uploads, reacting to queues, scheduled jobs, webhooks, and low-traffic APIs. Scale-to-zero makes idle endpoints nearly free. The trade-offs are cold starts, a 15-minute execution limit, and poor fit for persistent database connections.</p>
+      </details>
+      <details open>
+        <summary>What should I pick if I'm not sure between EC2, ECS, and Lambda?</summary>
+        <p>Start with Lambda or ECS on Fargate. It is far easier to move from serverless to servers when traffic justifies it than to recover the operations time spent managing instances you didn't need.</p>
+      </details>
+    </section>
     <a class="back-link" href="/blog/">&larr; All posts</a>
   </main>
   <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>

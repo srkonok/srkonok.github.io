@@ -14,7 +14,7 @@
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://srkonok.github.io/blog/docker-multi-stage-builds-smaller-images/">
   <meta property="og:site_name" content="Md Shahriar Rahman">
-  <meta property="og:image" content="https://srkonok.github.io/images/blog/docker-builds.jpg">
+  <meta property="og:image" content="https://srkonok.github.io/images/blog/docker-builds.webp">
   <meta property="article:published_time" content="2025-06-10">
   <meta property="article:author" content="Md Shahriar Rahman">
   <meta property="article:tag" content="Docker">
@@ -23,11 +23,11 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Docker Multi-Stage Builds: From 1.2GB Images to 90MB">
   <meta name="twitter:description" content="Our PHP and Node images were over a gigabyte, and every deploy paid for it in pull time and registry storage. Multi-stage builds cut them by more than 90%. A walkthrough of the technique, the layer-caching rules that make builds fast, and the base-image choices that actually matter.">
-  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/docker-builds.jpg">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Docker Multi-Stage Builds: From 1.2GB Images to 90MB","description":"Our PHP and Node images were over a gigabyte, and every deploy paid for it in pull time and registry storage. Multi-stage builds cut them by more than 90%. A walkthrough of the technique, the layer-caching rules that make builds fast, and the base-image choices that actually matter.","image":"https://srkonok.github.io/images/blog/docker-builds.jpg","datePublished":"2025-06-10","dateModified":"2025-06-10","keywords":"Docker, DevOps, CI/CD","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/docker-multi-stage-builds-smaller-images/"}}</script>
+  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/docker-builds.webp">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","headline":"Docker Multi-Stage Builds: From 1.2GB Images to 90MB","description":"Our PHP and Node images were over a gigabyte, and every deploy paid for it in pull time and registry storage. Multi-stage builds cut them by more than 90%. A walkthrough of the technique, the layer-caching rules that make builds fast, and the base-image choices that actually matter.","image":"https://srkonok.github.io/images/blog/docker-builds.webp","datePublished":"2025-06-10","dateModified":"2025-06-10","keywords":"Docker, DevOps, CI/CD","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/docker-multi-stage-builds-smaller-images/"},"speakable":{"@type":"SpeakableSpecification","cssSelector":["article h1","article > p:first-of-type"]}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do Docker multi-stage builds reduce image size?","acceptedAnswer":{"@type":"Answer","text":"You build in one stage with all compilers and dev dependencies, then a second FROM starts a clean stage that copies in only the runtime artifacts. Only the final stage ships, so build tooling never reaches production. Our Node API went from 1.2GB to 140MB and a Go service from 850MB to 18MB."}},{"@type":"Question","name":"Why doesn't deleting files in a Dockerfile make the image smaller?","acceptedAnswer":{"@type":"Answer","text":"Each Dockerfile instruction creates an immutable layer. A 'RUN rm -rf' in a later instruction hides the files but they still exist in the earlier layer, so the image stays the same size. The only fix is to never ship those layers, which is what multi-stage builds do."}},{"@type":"Question","name":"Should I use Alpine, slim, or distroless base images?","acceptedAnswer":{"@type":"Answer","text":"Alpine is smallest (~8MB) but its musl libc can break native dependencies; slim Debian-based variants are slightly larger but glibc-compatible and a safe default; distroless has the smallest attack surface (no shell or package manager) but is harder to debug, so it suits mature services."}}]}]}</script>
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
   <style>
-  :root { --skin: #ec1839; }
+  :root { --skin: #2196f3; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
          color: #302e4d; background: #f2f2fc; }
@@ -54,6 +54,12 @@
   article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
                 overflow-x: auto; margin-bottom: 16px; }
   article pre code { background: none; color: inherit; padding: 0; }
+  .faq { margin-top: 45px; border-top: 1px solid #e8dfec; padding-top: 30px; }
+  .faq h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin-bottom: 18px; }
+  .faq details { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 8px;
+                 padding: 14px 18px; margin-bottom: 12px; }
+  .faq summary { font-weight: 600; cursor: pointer; color: #302e4d; }
+  .faq details p { margin: 12px 0 0; color: #504e70; }
   .post-tags { margin-top: 35px; }
   .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
                     font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
@@ -92,13 +98,13 @@
 
       <p>When I audited our container registry, our main API image was 1.2GB. Every deploy pulled that across
         the network, every node cached copies of it, and the registry bill grew quietly each month. The image
-        contained compilers, dev dependencies, source maps, git history — none of which the running
+        contained compilers, dev dependencies, source maps, git history, none of which the running
         application needed. Multi-stage builds got it under 100MB. Here's how, and the details that actually
         matter.</p>
 
       <h2>Why images get fat</h2>
       <p>A naive Dockerfile installs build tools, pulls all dependencies, compiles the app, and ships
-        everything — because each instruction adds a layer and <strong>layers are never removed by later
+        everything, because each instruction adds a layer and <strong>layers are never removed by later
         instructions</strong>. A <code>RUN rm -rf node_modules</code> after the build doesn't shrink the
         image; the files still exist in the earlier layer. The only way to leave the build environment
         behind is to not ship it at all.</p>
@@ -130,7 +136,7 @@ CMD ["node", "dist/server.js"]</code></pre>
       <p>Multi-stage controls size; layer ordering controls speed. Docker caches each layer and invalidates
         the cache from the first changed instruction onward. The rule: <strong>copy what changes least,
         first.</strong> Copying <code>package.json</code> and installing dependencies before copying source
-        code means a code-only change reuses the cached dependency layer — our CI builds dropped from eight
+        code means a code-only change reuses the cached dependency layer; our CI builds dropped from eight
         minutes to under two on cache hits. Copying <code>. .</code> before <code>npm ci</code> throws that
         away on every commit.</p>
 
@@ -139,7 +145,7 @@ CMD ["node", "dist/server.js"]</code></pre>
         <li><strong>Alpine</strong> is the popular small option (~8MB), but its musl libc occasionally breaks
           native dependencies. Test before committing to it.</li>
         <li><strong>Slim variants</strong> (e.g. <code>debian-slim</code> based images) are slightly larger
-          but glibc-compatible — my default when Alpine misbehaves.</li>
+          but glibc-compatible, my default when Alpine misbehaves.</li>
         <li><strong>Distroless</strong> images contain no shell or package manager at all: smallest attack
           surface, but harder to debug inside. Good for mature services.</li>
       </ul>
@@ -150,7 +156,7 @@ CMD ["node", "dist/server.js"]</code></pre>
       <ul>
         <li>Node API: 1.2GB → 140MB. Go service: 850MB → 18MB. PHP-FPM app: 980MB → 240MB.</li>
         <li>Deploy pulls went from ~90 seconds to under 15.</li>
-        <li>Vulnerability scans got dramatically quieter — most CVEs lived in build tooling we no longer ship.</li>
+        <li>Vulnerability scans got dramatically quieter: most CVEs lived in build tooling we no longer ship.</li>
       </ul>
 
       <p>If you do one thing after reading this: open your main Dockerfile, check whether your build tools
@@ -159,6 +165,21 @@ CMD ["node", "dist/server.js"]</code></pre>
     
       <p class="post-tags"><span>Docker</span> <span>DevOps</span> <span>CI/CD</span></p>
     </article>
+    <section class="faq" aria-label="Frequently asked questions">
+      <h2>Frequently asked questions</h2>
+      <details open>
+        <summary>How do Docker multi-stage builds reduce image size?</summary>
+        <p>You build in one stage with all compilers and dev dependencies, then a second FROM starts a clean stage that copies in only the runtime artifacts. Only the final stage ships, so build tooling never reaches production. Our Node API went from 1.2GB to 140MB and a Go service from 850MB to 18MB.</p>
+      </details>
+      <details open>
+        <summary>Why doesn't deleting files in a Dockerfile make the image smaller?</summary>
+        <p>Each Dockerfile instruction creates an immutable layer. A 'RUN rm -rf' in a later instruction hides the files but they still exist in the earlier layer, so the image stays the same size. The only fix is to never ship those layers, which is what multi-stage builds do.</p>
+      </details>
+      <details open>
+        <summary>Should I use Alpine, slim, or distroless base images?</summary>
+        <p>Alpine is smallest (~8MB) but its musl libc can break native dependencies; slim Debian-based variants are slightly larger but glibc-compatible and a safe default; distroless has the smallest attack surface (no shell or package manager) but is harder to debug, so it suits mature services.</p>
+      </details>
+    </section>
     <a class="back-link" href="/blog/">&larr; All posts</a>
   </main>
   <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>

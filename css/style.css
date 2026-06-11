@@ -1763,13 +1763,31 @@ body.dark .hero-stat span { color: #aaa; }
     white-space: nowrap;
 }
 
-.skill-tag.expert     { background: #e8f4fd; color: #1565c0; border: 1px solid #bbdefb; }
-.skill-tag.proficient { background: #f3e5f5; color: #6a1b9a; border: 1px solid #e1bee7; }
-.skill-tag.familiar   { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+/* One theme hue, three intensities: expert filled, proficient tinted, familiar neutral */
+.skill-tag.expert {
+    background: var(--skin-color);
+    color: #ffffff;
+    border: 1px solid var(--skin-color);
+}
 
-body.dark .skill-tag.expert     { background: #1a237e; color: #90caf9; border-color: #1565c0; }
-body.dark .skill-tag.proficient { background: #4a148c; color: #ce93d8; border-color: #6a1b9a; }
-body.dark .skill-tag.familiar   { background: #1b5e20; color: #a5d6a7; border-color: #2e7d32; }
+.skill-tag.proficient {
+    background: rgba(33, 150, 243, 0.1);
+    color: var(--skin-color);
+    border: 1px solid rgba(33, 150, 243, 0.3);
+    background: color-mix(in srgb, var(--skin-color) 10%, transparent);
+    border-color: color-mix(in srgb, var(--skin-color) 30%, transparent);
+}
+
+.skill-tag.familiar {
+    background: transparent;
+    color: var(--text-black-700);
+    border: 1px solid var(--bg-black-100);
+}
+
+body.dark .skill-tag.proficient {
+    color: #90caf9;
+    color: color-mix(in srgb, var(--skin-color) 65%, #ffffff);
+}
 
 /* =============================================
    Portfolio card body (description below image)
@@ -1821,16 +1839,25 @@ body.dark .portfolio-card-body p { color: #cccccc; }
 .portfolio-tech-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
 
 .portfolio-tech-tag {
-    background: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #c8e6c9;
+    background: rgba(33, 150, 243, 0.08);
+    color: var(--skin-color);
+    border: 1px solid rgba(33, 150, 243, 0.3);
+    background: color-mix(in srgb, var(--skin-color) 8%, transparent);
+    border-color: color-mix(in srgb, var(--skin-color) 30%, transparent);
     border-radius: 4px;
     padding: 2px 9px;
     font-size: 12px;
     font-weight: 600;
 }
 
-body.dark .portfolio-tech-tag { background: #1b5e20; color: #a5d6a7; border-color: #2e7d32; }
+body.dark .portfolio-tech-tag {
+    background: rgba(33, 150, 243, 0.15);
+    color: #90caf9;
+    border-color: rgba(33, 150, 243, 0.45);
+    background: color-mix(in srgb, var(--skin-color) 15%, transparent);
+    color: color-mix(in srgb, var(--skin-color) 65%, #ffffff);
+    border-color: color-mix(in srgb, var(--skin-color) 45%, transparent);
+}
 
 .portfolio-badge-private {
     display: flex;
@@ -2270,7 +2297,7 @@ body.dark .blog-post h2 {
 
 /* Availability badge: centered below photo */
 .home .intro .availability-badge {
-    display: block;
+    display: flex;
     width: fit-content;
     margin: 0 auto 12px;
 }

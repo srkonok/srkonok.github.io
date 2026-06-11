@@ -1,0 +1,28 @@
+# Md Shahriar Rahman — Software Engineer
+
+> Personal site and technical blog of Md Shahriar Rahman, a software engineer in Dhaka, Bangladesh
+> with 3+ years of experience in backend APIs, ERP systems, AWS cloud, and CI/CD.
+> AWS Certified Cloud Practitioner. Writes about cloud architecture, DevOps, and system design.
+
+Each blog post below is a standalone HTML page with the full article text and a
+frequently-asked-questions section summarising its key answers.
+
+## Blog posts
+
+- [Scaling Databases: Replication, Sharding, and Caching in Practice](https://srkonok.github.io/blog/scaling-databases-replication-sharding-caching/): Most systems don't die from too much code. They die from one overloaded database. The scaling ladder I follow in practice: indexing and query fixes first, then read replicas, then caching with Redis, and only then sharding, with the failure modes each step introduces along the way.
+- [Designing a Rate Limiter: A Practical System Design Walkthrough](https://srkonok.github.io/blog/designing-rate-limiter-system-design/): The rate limiter is a system design classic because it packs real distributed-systems tradeoffs into a small problem. Token bucket vs sliding window, where the limiter lives in your architecture, keeping counters in Redis, and what changes when you go from one server to twenty.
+- [Monitoring Microservices with Prometheus and Grafana](https://srkonok.github.io/blog/monitoring-prometheus-grafana-microservices/): You can't fix what you can't see. How I set up Prometheus and Grafana to monitor a multi-service Laravel platform: the four golden signals, exporters worth installing, alert rules that page for symptoms instead of causes, and the dashboard layout my team actually uses during incidents.
+- [Docker Multi-Stage Builds: From 1.2GB Images to 90MB](https://srkonok.github.io/blog/docker-multi-stage-builds-smaller-images/): Our PHP and Node images were over a gigabyte, and every deploy paid for it in pull time and registry storage. Multi-stage builds cut them by more than 90%. A walkthrough of the technique, the layer-caching rules that make builds fast, and the base-image choices that actually matter.
+- [AWS VPC Networking Explained: Subnets, Route Tables, and NAT](https://srkonok.github.io/blog/aws-vpc-networking-fundamentals/): VPC networking is where most cloud engineers' mental models break down. This post builds one from scratch: public vs private subnets, route tables, internet and NAT gateways, and security groups vs NACLs, ending with the three-tier network layout I use as a default for production workloads.
+- [EC2 vs ECS vs Lambda: Choosing the Right Compute on AWS](https://srkonok.github.io/blog/choosing-aws-compute-ec2-ecs-lambda/): Every AWS project starts with the same question: where should this code actually run? A practical decision framework for picking between EC2, ECS, and Lambda based on workload shape, traffic patterns, cost, and operational overhead, with real examples from production systems I've run on all three.
+- [How I Cut API Deployment Time by 60% Using GitHub Actions & Docker](https://srkonok.github.io/blog/cut-deployment-time-github-actions-docker/): A step-by-step breakdown of the CI/CD pipeline I implemented at Orange Business Development that reduced deployment time from 25 minutes to under 10 minutes with zero-downtime releases. Covers Docker containerisation, self-hosted runners, environment secrets management, and rollback strategies.
+- [Building a Multi-District Government System with Laravel Microservices](https://srkonok.github.io/blog/laravel-microservices-government-system/): How our team built and deployed the RDCD Beneficiary Training Management System, a microservice-based platform serving 50,000+ beneficiaries across multiple districts under the Ministry of Local Government. Covers architecture decisions, CI/CD pipeline setup with GitHub Actions, and lessons learned.
+- [AWS Cloud Practitioner: My Study Plan and Key Takeaways](https://srkonok.github.io/blog/aws-cloud-practitioner-study-plan/): Passed the AWS Certified Cloud Practitioner exam in January 2024. In this post I share the exact study plan I followed, from core services (EC2, S3, RDS, Lambda, IAM) to the exam strategies that helped me pass on the first attempt. Includes free and paid resources.
+
+## Site
+
+- [Homepage](https://srkonok.github.io/): profile, skills, portfolio, services, and contact details
+- [Blog index](https://srkonok.github.io/blog/): all posts
+- [Resume (PDF)](https://srkonok.github.io/Shahriar_Rahman_Resume.pdf)
+- [GitHub](https://github.com/srkonok)
+- [LinkedIn](https://www.linkedin.com/in/shah-konok)

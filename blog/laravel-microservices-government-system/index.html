@@ -14,7 +14,7 @@
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://srkonok.github.io/blog/laravel-microservices-government-system/">
   <meta property="og:site_name" content="Md Shahriar Rahman">
-  <meta property="og:image" content="https://srkonok.github.io/images/blog/framework.webp">
+  <meta property="og:image" content="https://srkonok.github.io/images/blog/laravel-microservices.webp">
   <meta property="article:published_time" content="2024-10-28">
   <meta property="article:author" content="Md Shahriar Rahman">
   <meta property="article:tag" content="Laravel">
@@ -23,11 +23,11 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Building a Multi-District Government System with Laravel Microservices">
   <meta name="twitter:description" content="How our team built and deployed the RDCD Beneficiary Training Management System, a microservice-based platform serving 50,000+ beneficiaries across multiple districts under the Ministry of Local Government. Covers architecture decisions, CI/CD pipeline setup with GitHub Actions, and lessons learned.">
-  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/framework.webp">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Building a Multi-District Government System with Laravel Microservices","description":"How our team built and deployed the RDCD Beneficiary Training Management System, a microservice-based platform serving 50,000+ beneficiaries across multiple districts under the Ministry of Local Government. Covers architecture decisions, CI/CD pipeline setup with GitHub Actions, and lessons learned.","image":"https://srkonok.github.io/images/blog/framework.webp","datePublished":"2024-10-28","dateModified":"2024-10-28","keywords":"Laravel, Microservices, Backend","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/laravel-microservices-government-system/"}}</script>
+  <meta name="twitter:image" content="https://srkonok.github.io/images/blog/laravel-microservices.webp">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","headline":"Building a Multi-District Government System with Laravel Microservices","description":"How our team built and deployed the RDCD Beneficiary Training Management System, a microservice-based platform serving 50,000+ beneficiaries across multiple districts under the Ministry of Local Government. Covers architecture decisions, CI/CD pipeline setup with GitHub Actions, and lessons learned.","image":"https://srkonok.github.io/images/blog/laravel-microservices.webp","datePublished":"2024-10-28","dateModified":"2024-10-28","keywords":"Laravel, Microservices, Backend","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/laravel-microservices-government-system/"},"speakable":{"@type":"SpeakableSpecification","cssSelector":["article h1","article > p:first-of-type"]}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the RDCD Beneficiary Training Management System?","acceptedAnswer":{"@type":"Answer","text":"A microservice-based platform built with Laravel that manages training for 50,000+ beneficiaries across multiple districts in Bangladesh, operated under the Ministry of Local Government's Rural Development and Co-operatives Division."}},{"@type":"Question","name":"Why use microservices for a multi-district government system?","acceptedAnswer":{"@type":"Answer","text":"Services can be deployed and scaled independently per district, a failure in one service stays isolated instead of taking down the whole platform, and each service gets its own CI/CD pipeline with GitHub Actions for safer, more frequent releases."}}]}]}</script>
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
   <style>
-  :root { --skin: #ec1839; }
+  :root { --skin: #2196f3; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
          color: #302e4d; background: #f2f2fc; }
@@ -54,6 +54,12 @@
   article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
                 overflow-x: auto; margin-bottom: 16px; }
   article pre code { background: none; color: inherit; padding: 0; }
+  .faq { margin-top: 45px; border-top: 1px solid #e8dfec; padding-top: 30px; }
+  .faq h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin-bottom: 18px; }
+  .faq details { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 8px;
+                 padding: 14px 18px; margin-bottom: 12px; }
+  .faq summary { font-weight: 600; cursor: pointer; color: #302e4d; }
+  .faq details p { margin: 12px 0 0; color: #504e70; }
   .post-tags { margin-top: 35px; }
   .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
                     font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
@@ -91,7 +97,7 @@
       </header>
 
       <p>At Orange Business Development I worked on the Beneficiary Training Management System for RDCD,
-        under Bangladesh's Ministry of Local Government — a platform that manages training programs for
+        under Bangladesh's Ministry of Local Government, a platform that manages training programs for
         50,000+ beneficiaries across multiple districts. This post covers the architecture decisions we made,
         why we split the system into services, and what I'd do differently.</p>
 
@@ -102,11 +108,11 @@
         different stakeholders. Registration spikes when a new program opens; reporting spikes at month-end;
         disbursement must integrate with a payment gateway and absolutely cannot double-pay.</p>
 
-      <h2>Why microservices — and why "boring" ones</h2>
+      <h2>Why microservices, and why "boring" ones</h2>
       <p>We didn't start from a microservices ideology. We started from three operational facts:</p>
       <ul>
         <li>The payment/disbursement flow needed stricter change control and isolation than the rest of the
-          system — a bug in reporting must never take down payments.</li>
+          system: a bug in reporting must never take down payments.</li>
         <li>District-level usage was bursty, and we wanted to scale the public-facing registration service
           independently of the internal admin tools.</li>
         <li>Multiple teams worked in parallel, and a modular monolith was already showing merge-conflict and
@@ -115,7 +121,7 @@
       <p>So we split along those seams: a registration/beneficiary service, a training-management service, a
         disbursement service wrapping the payment gateway, and a notification service (SMS and in-app, since
         many beneficiaries are reachable only by phone). Each service is a plain Laravel application with its
-        own MySQL schema, fronted by REST APIs — no exotic infrastructure, because a government project's
+        own MySQL schema, fronted by REST APIs, with no exotic infrastructure, because a government project's
         operations team has to be able to run it for years.</p>
 
       <h2>Decisions that paid off</h2>
@@ -127,10 +133,10 @@
           idempotency key, stored with a unique constraint. Gateway timeouts and retries were common; duplicate
           payments were not.</li>
         <li><strong>API performance work where it mattered.</strong> Profiling showed most latency came from a
-          handful of N+1 query patterns and unindexed filters on district/batch lookups. Fixing those — eager
-          loading, composite indexes, and response caching on slow-changing reference data — improved
+          handful of N+1 query patterns and unindexed filters on district/batch lookups. Fixing those (eager
+          loading, composite indexes, and response caching on slow-changing reference data) improved
           processing speed by roughly 35% across the 30+ endpoints we built and optimized.</li>
-        <li><strong>CI/CD from day one.</strong> GitHub Actions pipelines per service — test, build, deploy —
+        <li><strong>CI/CD from day one.</strong> GitHub Actions pipelines per service (test, build, deploy)
           cut our deployment time by about 60% compared with the manual process the project started with, and
           made multi-service releases predictable. (I wrote up the pipeline details in a separate post.)</li>
       </ul>
@@ -150,11 +156,22 @@
       </ul>
 
       <p>The system is live at <a href="https://service.rdcd.gov.bd/" target="_blank" rel="noopener noreferrer">service.rdcd.gov.bd</a>,
-        serving beneficiaries across multiple districts. If you're building something similar — especially in a
-        public-sector context — I'm happy to compare notes; reach me through the contact page.</p>
+        serving beneficiaries across multiple districts. If you're building something similar, especially in a
+        public-sector context, I'm happy to compare notes; reach me through the contact page.</p>
     
       <p class="post-tags"><span>Laravel</span> <span>Microservices</span> <span>Backend</span></p>
     </article>
+    <section class="faq" aria-label="Frequently asked questions">
+      <h2>Frequently asked questions</h2>
+      <details open>
+        <summary>What is the RDCD Beneficiary Training Management System?</summary>
+        <p>A microservice-based platform built with Laravel that manages training for 50,000+ beneficiaries across multiple districts in Bangladesh, operated under the Ministry of Local Government's Rural Development and Co-operatives Division.</p>
+      </details>
+      <details open>
+        <summary>Why use microservices for a multi-district government system?</summary>
+        <p>Services can be deployed and scaled independently per district, a failure in one service stays isolated instead of taking down the whole platform, and each service gets its own CI/CD pipeline with GitHub Actions for safer, more frequent releases.</p>
+      </details>
+    </section>
     <a class="back-link" href="/blog/">&larr; All posts</a>
   </main>
   <footer>&copy; 2026 Md Shahriar Rahman &middot; <a href="/">srkonok.github.io</a></footer>
