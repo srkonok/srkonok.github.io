@@ -26,56 +26,7 @@
   <meta name="twitter:image" content="https://srkonok.github.io/images/blog/database-scaling.webp">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BlogPosting","headline":"Scaling Databases: Replication, Sharding, and Caching in Practice","description":"Most systems don't die from too much code. They die from one overloaded database. The scaling ladder I follow in practice: indexing and query fixes first, then read replicas, then caching with Redis, and only then sharding, with the failure modes each step introduces along the way.","image":"https://srkonok.github.io/images/blog/database-scaling.webp","datePublished":"2026-03-20","dateModified":"2026-03-20","keywords":"System Design, Database, Scalability","author":{"@type":"Person","name":"Md Shahriar Rahman","url":"https://srkonok.github.io/","@id":"https://srkonok.github.io/#person"},"publisher":{"@id":"https://srkonok.github.io/#person"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://srkonok.github.io/blog/scaling-databases-replication-sharding-caching/"},"speakable":{"@type":"SpeakableSpecification","cssSelector":["article h1","article > p:first-of-type"]}},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"In what order should you scale a database?","acceptedAnswer":{"@type":"Answer","text":"Indexes and query fixes first, then read replicas, then caching with Redis, and sharding only as a last resort. Each step adds permanent complexity, so climb only as high as your traffic forces you to."}},{"@type":"Question","name":"What is replication lag and what bug does it cause?","acceptedAnswer":{"@type":"Answer","text":"A read replica is always slightly behind the primary. The classic bug: a user saves a form, the next page reads from a replica, and their change appears lost. Fix it with read-your-own-writes routing: pin a user's reads to the primary for a few seconds after they write."}},{"@type":"Question","name":"When should you shard a database?","acceptedAnswer":{"@type":"Answer","text":"Only when a single primary can no longer handle the write volume, since replicas and caching solve read scale. Sharding permanently costs you cross-shard joins and transactions, so consider managed alternatives like Aurora or DynamoDB before splitting the data yourself."}}]}]}</script>
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
-  <style>
-  :root { --skin: #2196f3; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
-         color: #302e4d; background: #f2f2fc; }
-  .site-header { background: #fdf9ff; border-bottom: 1px solid #e8dfec; padding: 18px 20px; }
-  .site-header .wrap { max-width: 760px; margin: auto; display: flex;
-                       justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-  .site-header a.brand { font-family: 'Rubik', sans-serif; font-weight: 700; font-size: 22px;
-                         color: #302e4d; text-decoration: none; }
-  .site-header a.brand span { color: var(--skin); }
-  .site-header nav a { color: #504e70; text-decoration: none; font-weight: 600;
-                       font-size: 15px; margin-left: 18px; }
-  .site-header nav a:hover { color: var(--skin); }
-  main { max-width: 760px; margin: auto; padding: 50px 20px 70px; }
-  h1 { font-family: 'Rubik', sans-serif; font-size: 34px; line-height: 1.25; margin-bottom: 12px; }
-  .post-meta { color: #7c7a93; font-size: 15px; margin-bottom: 35px; }
-  article h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin: 35px 0 14px; }
-  article p { margin-bottom: 16px; color: #504e70; }
-  article ul, article ol { margin: 0 0 16px 22px; color: #504e70; }
-  article li { margin-bottom: 8px; }
-  article strong { color: #302e4d; }
-  article a { color: var(--skin); }
-  article code { background: #e8e6f5; padding: 2px 6px; border-radius: 4px;
-                 font-size: 0.9em; color: #302e4d; }
-  article pre { background: #2b2b3a; color: #eaeaea; padding: 18px; border-radius: 8px;
-                overflow-x: auto; margin-bottom: 16px; }
-  article pre code { background: none; color: inherit; padding: 0; }
-  .faq { margin-top: 45px; border-top: 1px solid #e8dfec; padding-top: 30px; }
-  .faq h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin-bottom: 18px; }
-  .faq details { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 8px;
-                 padding: 14px 18px; margin-bottom: 12px; }
-  .faq summary { font-weight: 600; cursor: pointer; color: #302e4d; }
-  .faq details p { margin: 12px 0 0; color: #504e70; }
-  .post-tags { margin-top: 35px; }
-  .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
-                    font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
-  .back-link { display: inline-block; margin-top: 35px; color: var(--skin);
-               text-decoration: none; font-weight: 600; }
-  .post-list { list-style: none; }
-  .post-list li { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 10px;
-                  padding: 24px; margin-bottom: 20px; }
-  .post-list h2 { font-family: 'Rubik', sans-serif; font-size: 22px; margin-bottom: 8px; }
-  .post-list h2 a { color: #302e4d; text-decoration: none; }
-  .post-list h2 a:hover { color: var(--skin); }
-  .post-list .date { color: #7c7a93; font-size: 14px; margin-bottom: 10px; }
-  .post-list p { color: #504e70; font-size: 15px; }
-  footer { text-align: center; padding: 25px 20px 45px; color: #7c7a93; font-size: 14px; }
-  footer a { color: var(--skin); text-decoration: none; }
-</style>
+  <link rel="stylesheet" href="/css/blog-static.css">
 </head>
 <body>
   <header class="site-header">
@@ -90,13 +41,12 @@
   </header>
   <main>
     <article>
-
-      <header class="blog-post-header">
+      <header>
         <h1>Scaling Databases: Replication, Sharding, and Caching in Practice</h1>
         <p class="post-meta">20 Mar 2026 &middot; System Design &middot; Database &middot; Scalability</p>
       </header>
 
-      <p>Most systems don't die from too much code. They die from one overloaded database. Application
+            <p>Most systems don't die from too much code. They die from one overloaded database. Application
         servers scale horizontally almost for free; the database is where state lives, and state is hard to
         split. Having watched a single MySQL instance grind a 50,000-user platform to a halt, here is the
         scaling ladder I follow, in order, because each rung adds complexity you then live with forever.</p>

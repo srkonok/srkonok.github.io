@@ -9,11 +9,17 @@ import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { blogs } from '../js/portfolio.js';
+import {
+  SITE_URL,
+  SITE_NAME as AUTHOR,
+  SKIN_COLOR as SKIN,
+  BLOG_TAGLINE,
+  GITHUB_URL,
+  LINKEDIN_URL,
+  escapeHtml as escapeAttr
+} from '../js/site-config.js';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SITE_URL = 'https://srkonok.github.io';
-const AUTHOR = 'Md Shahriar Rahman';
-const SKIN = '#2196f3';
 
 const MONTHS = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
                  Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' };
@@ -22,10 +28,6 @@ const MONTHS = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06
 function toISODate(d) {
   const [day, mon, year] = d.split(' ');
   return `${year}-${MONTHS[mon]}-${day.padStart(2, '0')}`;
-}
-
-function escapeAttr(str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 const PAGE_CSS = `
@@ -98,7 +100,7 @@ function pageShell({ title, description, canonical, ogType, extraHead, body }) {
   <meta property="og:site_name" content="${AUTHOR}">
 ${extraHead}
   <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700|Rubik:500,700&display=swap" rel="stylesheet">
-  <style>${PAGE_CSS}</style>
+  <link rel="stylesheet" href="/css/blog-static.css">
 </head>
 <body>
   <header class="site-header">
@@ -119,6 +121,11 @@ ${body}
 </html>
 `;
 }
+
+// --- Shared stylesheet for all generated pages (written once, linked by each page) ---
+
+writeFileSync(join(ROOT, 'css', 'blog-static.css'), PAGE_CSS.trimStart());
+console.log('wrote css/blog-static.css');
 
 // --- Per-post pages ---
 
@@ -182,9 +189,13 @@ ${blog.faqs.map(f => `      <details open>
       </details>`).join('\n')}
     </section>` : '';
 
-  // The article markup already contains the h1 header; add date + tags around it.
+  // Post partials are body-only; the header (title, date, tags) comes from the blogs array.
   const body = `    <article>
-${match[1].replace(/class="blog-post-meta">/, `class="post-meta">${blog.date} &middot; `)}
+      <header>
+        <h1>${escapeAttr(blog.title)}</h1>
+        <p class="post-meta">${blog.date} &middot; ${blog.tags.map(escapeAttr).join(' &middot; ')}</p>
+      </header>
+${match[1]}
       <p class="post-tags">${blog.tags.map(t => `<span>${escapeAttr(t)}</span>`).join(' ')}</p>
     </article>${faqSection}
     <a class="back-link" href="/blog/">&larr; All posts</a>`;
@@ -212,7 +223,7 @@ const indexJsonLd = {
   '@id': `${SITE_URL}/blog/#blog`,
   url: `${SITE_URL}/blog/`,
   name: `Blog — ${AUTHOR}`,
-  description: 'Articles on backend development, AWS cloud, DevOps, CI/CD, and system design.',
+  description: `${BLOG_TAGLINE}.`,
   author: { '@type': 'Person', name: AUTHOR, url: `${SITE_URL}/`, '@id': `${SITE_URL}/#person` },
   blogPost: newestFirst.map(b => ({
     '@type': 'BlogPosting',
@@ -223,7 +234,7 @@ const indexJsonLd = {
 };
 
 const indexBody = `    <h1>Blog</h1>
-    <p class="post-meta">Articles on backend development, AWS cloud, DevOps, CI/CD, and system design.</p>
+    <p class="post-meta">${BLOG_TAGLINE}.</p>
     <ul class="post-list">
 ${newestFirst.map(b => `      <li>
         <h2><a href="/blog/${b.slug}/">${escapeAttr(b.title)}</a></h2>
@@ -234,7 +245,7 @@ ${newestFirst.map(b => `      <li>
 
 writeFileSync(join(ROOT, 'blog', 'index.html'), pageShell({
   title: `Blog — ${AUTHOR} | Backend, Cloud & DevOps Articles`,
-  description: 'Articles on backend development, AWS cloud, DevOps, CI/CD, and system design by Md Shahriar Rahman, Software Engineer and AWS Certified Cloud Practitioner.',
+  description: `${BLOG_TAGLINE} by ${AUTHOR}, Software Engineer and AWS Certified Cloud Practitioner.`,
   canonical: `${SITE_URL}/blog/`,
   ogType: 'website',
   extraHead: `  <script type="application/ld+json">${JSON.stringify(indexJsonLd)}</script>`,
@@ -268,7 +279,7 @@ console.log(`wrote sitemap.xml (${urls.length} URLs)`);
 
 // --- llms.txt (https://llmstxt.org): site guide for AI assistants and answer engines ---
 
-const llmsTxt = `# Md Shahriar Rahman — Software Engineer
+const llmsTxt = `# ${AUTHOR} — Software Engineer
 
 > Personal site and technical blog of ${AUTHOR}, a software engineer in Dhaka, Bangladesh
 > with 3+ years of experience in backend APIs, ERP systems, AWS cloud, and CI/CD.
@@ -286,8 +297,8 @@ ${newestFirst.map(b => `- [${b.title}](${SITE_URL}/blog/${b.slug}/): ${b.descrip
 - [Homepage](${SITE_URL}/): profile, skills, portfolio, services, and contact details
 - [Blog index](${SITE_URL}/blog/): all posts
 - [Resume (PDF)](${SITE_URL}/Shahriar_Rahman_Resume_v2.1.pdf)
-- [GitHub](https://github.com/srkonok)
-- [LinkedIn](https://www.linkedin.com/in/shah-konok)
+- [GitHub](${GITHUB_URL})
+- [LinkedIn](${LINKEDIN_URL})
 `;
 
 writeFileSync(join(ROOT, 'llms.txt'), llmsTxt);

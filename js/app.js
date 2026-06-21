@@ -1,4 +1,5 @@
 import { blogs } from './portfolio.js';
+import { SITE_URL, SITE_NAME, BLOG_TAGLINE, escapeHtml } from './site-config.js';
 
 const routes = {
   sidebar: 'partials/sidebar.html',
@@ -16,38 +17,36 @@ const carouselTimers = [];
 
 // --- SEO: per-route document title, description, canonical ---
 
-const SITE_URL = 'https://srkonok.github.io/';
-const SITE_NAME = 'Md Shahriar Rahman';
 const DEFAULT_TITLE = document.title;
 const DEFAULT_DESCRIPTION = document
   .querySelector('meta[name="description"]')
   .getAttribute('content');
 
 const sectionMeta = {
-  about: ['About', 'About Md Shahriar Rahman - Software Engineer in Dhaka, Bangladesh. Skills, education, and experience in backend development, AWS cloud, and DevOps.'],
-  certification: ['Certifications', 'Professional certifications of Md Shahriar Rahman, including AWS Certified Engineer and Cloud Management with AWS.'],
-  services: ['Services', 'Services offered by Md Shahriar Rahman: backend API development, AWS cloud architecture, CI/CD pipelines, and DevOps consulting.'],
-  portfolio: ['Portfolio', 'Selected projects by Md Shahriar Rahman - ERP systems, government platforms, backend APIs, and cloud deployments.'],
-  blog: ['Blog', 'Articles on backend development, AWS cloud, DevOps, CI/CD, and system design by Md Shahriar Rahman.'],
-  contact: ['Contact', 'Get in touch with Md Shahriar Rahman for backend, cloud, and DevOps work.']
+  about: ['About', `About ${SITE_NAME} - Software Engineer in Dhaka, Bangladesh. Skills, education, and experience in backend development, AWS cloud, and DevOps.`],
+  certification: ['Certifications', `Professional certifications of ${SITE_NAME}, including AWS Certified Engineer and Cloud Management with AWS.`],
+  services: ['Services', `Services offered by ${SITE_NAME}: backend API development, AWS cloud architecture, CI/CD pipelines, and DevOps consulting.`],
+  portfolio: ['Portfolio', `Selected projects by ${SITE_NAME} - ERP systems, government platforms, backend APIs, and cloud deployments.`],
+  blog: ['Blog', `${BLOG_TAGLINE} by ${SITE_NAME}.`],
+  contact: ['Contact', `Get in touch with ${SITE_NAME} for backend, cloud, and DevOps work.`]
 };
 
 function updateSEO(base, slug) {
   let title = DEFAULT_TITLE;
   let description = DEFAULT_DESCRIPTION;
-  let canonical = SITE_URL;
+  let canonical = `${SITE_URL}/`;
 
   if (base === 'blog' && slug) {
     const post = blogs.find(b => b.slug === slug);
     if (post) {
       title = `${post.title} - ${SITE_NAME}`;
       description = post.description;
-      canonical = `${SITE_URL}blog/${post.slug}/`;
+      canonical = `${SITE_URL}/blog/${post.slug}/`;
     }
   } else if (sectionMeta[base]) {
     title = `${sectionMeta[base][0]} - ${DEFAULT_TITLE}`;
     description = sectionMeta[base][1];
-    if (base === 'blog') canonical = `${SITE_URL}blog/`;
+    if (base === 'blog') canonical = `${SITE_URL}/blog/`;
   }
 
   document.title = title;
@@ -126,6 +125,7 @@ async function loadSection(rawSection) {
     mainContent.scrollTop = 0;
     window.scrollTo(0, 0);
 
+    if (base === 'blog' && slug) injectPostHeader(slug);
     updateSEO(base, slug);
 
     navLinks.forEach(link => link.classList.remove('active'));
@@ -147,6 +147,19 @@ async function loadSection(rawSection) {
         <a href="#home" style="margin-top:16px;display:inline-block;color:var(--skin-color);">Go to Home</a>
       </div>`;
   }
+}
+
+// Post partials are body-only; the header (title, tags) is built from the blogs array
+function injectPostHeader(slug) {
+  const post = blogs.find(b => b.slug === slug);
+  const article = mainContent.querySelector('article');
+  if (!post || !article) return;
+  const header = document.createElement('header');
+  header.className = 'blog-post-header';
+  header.innerHTML = `
+    <h1>${escapeHtml(post.title)}</h1>
+    <p class="blog-post-meta">${post.tags.map(escapeHtml).join(' &middot; ')}</p>`;
+  article.prepend(header);
 }
 
 // Wire any [data-nav-section] element in the loaded content to SPA navigation
@@ -204,14 +217,6 @@ function initPortfolioFilter() {
       window.open(link.href, '_blank', 'noopener');
     });
   });
-}
-
-function escapeHtml(str) {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 const POSTS_PER_PAGE = 6;
