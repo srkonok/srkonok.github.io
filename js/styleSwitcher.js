@@ -9,6 +9,7 @@ function setActiveStyle(color) {
 function setBodySkin(skin) {
     localStorage.setItem('selectedSkin', skin);
     document.body.className = skin === 'dark' ? 'dark' : '';
+    document.documentElement.setAttribute('data-theme', skin);
     bodySkin.forEach(radio => { radio.checked = radio.value === skin; });
 }
 
