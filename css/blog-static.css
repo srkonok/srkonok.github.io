@@ -1,7 +1,7 @@
 :root { --skin: #2196f3; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Montserrat', sans-serif; font-size: 17px; line-height: 1.7;
-         color: #302e4d; background: #f2f2fc; }
+         color: #1a1828; background: #f2f2fc; }
   .site-header { background: #fdf9ff; border-bottom: 1px solid #e8dfec; padding: 18px 20px; }
   .site-header .wrap { max-width: 760px; margin: auto; display: flex;
                        justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
@@ -13,12 +13,12 @@
   .site-header nav a:hover { color: var(--skin); }
   main { max-width: 760px; margin: auto; padding: 50px 20px 70px; }
   h1 { font-family: 'Rubik', sans-serif; font-size: 34px; line-height: 1.25; margin-bottom: 12px; }
-  .post-meta { color: #7c7a93; font-size: 15px; margin-bottom: 35px; }
+  .post-meta { color: #55536e; font-size: 15px; margin-bottom: 35px; }
   article h2 { font-family: 'Rubik', sans-serif; font-size: 24px; margin: 35px 0 14px; }
-  article p { margin-bottom: 16px; color: #504e70; }
-  article ul, article ol { margin: 0 0 16px 22px; color: #504e70; }
+  article p { margin-bottom: 16px; color: #1e1c33; }
+  article ul, article ol { margin: 0 0 16px 22px; color: #1e1c33; }
   article li { margin-bottom: 8px; }
-  article strong { color: #302e4d; }
+  article strong { color: #0f0e1a; }
   article a { color: var(--skin); }
   article code { background: #e8e6f5; padding: 2px 6px; border-radius: 4px;
                  font-size: 0.9em; color: #302e4d; }
@@ -30,7 +30,7 @@
   .faq details { background: #fdf9ff; border: 1px solid #e8dfec; border-radius: 8px;
                  padding: 14px 18px; margin-bottom: 12px; }
   .faq summary { font-weight: 600; cursor: pointer; color: #302e4d; }
-  .faq details p { margin: 12px 0 0; color: #504e70; }
+  .faq details p { margin: 12px 0 0; color: #1e1c33; }
   .post-tags { margin-top: 35px; }
   .post-tags span { display: inline-block; background: #e8e6f5; color: #302e4d; font-size: 13px;
                     font-weight: 600; padding: 5px 12px; border-radius: 20px; margin: 0 6px 6px 0; }
@@ -43,6 +43,6 @@
   .post-list h2 a { color: #302e4d; text-decoration: none; }
   .post-list h2 a:hover { color: var(--skin); }
   .post-list .date { color: #7c7a93; font-size: 14px; margin-bottom: 10px; }
-  .post-list p { color: #504e70; font-size: 15px; }
-  footer { text-align: center; padding: 25px 20px 45px; color: #7c7a93; font-size: 14px; }
+  .post-list p { color: #1e1c33; font-size: 15px; }
+  footer { text-align: center; padding: 25px 20px 45px; color: #55536e; font-size: 14px; }
   footer a { color: var(--skin); text-decoration: none; }
